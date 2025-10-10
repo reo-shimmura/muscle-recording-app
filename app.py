@@ -10,7 +10,7 @@ import pathlib
 import gspread # 【追加】gspreadをapp.pyでインポート
 
 from database import (
-    insert_record, fetch_all_records, update_record, delete_record,
+    insert_record, fetch_all_records_df, update_record, delete_record,
     insert_image, fetch_images_by_date, fetch_all_dates_with_images,
     insert_goal, fetch_all_goals, delete_goal
 )
