@@ -20,56 +20,40 @@ from streamlit_image_comparison import image_comparison
 # --- 接続設定 ---
 SPREADSHEET_NAME = "筋トレ記録アプリ DB" 
 
-@st.cache_resource(ttl=3600)
+@st.cache_resource(show_spinner=False)
 def get_gspread_client():
-    """Streamlitのキャッシュを使ってGoogle Sheetsクライアントを生成（安全なチェック付き）"""
-    try:
-        sa = st.secrets.get("gcp_service_account")
-        if sa is None:
-            st.error("🚨 secrets に gcp_service_account が設定されていません。secrets.toml にサービスアカウントのJSONを追加してください。")
-            return None
-
-        client = gspread.service_account_from_dict(sa)
-
-        # スプレッドシート存在チェック（見つからなくても client は返すが warning を出す）
-        try:
-            client.open(SPREADSHEET_NAME)
-            st.success("✅ Google Sheets に接続しました！")
-        except Exception as e:
-            st.warning(f"スプレッドシート '{SPREADSHEET_NAME}' が見つかりません（サービスアカウントに共有済みか確認してください）。詳細: {e}")
-
-        return client
-
-    except Exception as e:
-        # 詳細な例外を表示してデバッグしやすくする
-        import traceback
-        tb = traceback.format_exc()
-        st.error("🚨 Google Sheets への接続に失敗しました。詳細は下記です。")
-        st.text(tb)
-        return None
+    import gspread
+    sa = st.secrets.get("gcp_service_account")
+    client = gspread.service_account_from_dict(sa)
+    return client
 
 client = get_gspread_client()
 
 # --- 初期設定 ---
 st.set_page_config(page_title="筋トレ記録アプリ", layout="wide")
 
+st.markdown("""
+    <style>
+    /* モバイル表示の調整 */
+    [data-testid="stForm"] {padding: 0.5rem !important;}
+    [data-testid="stDataFrame"] {overflow-x: auto !important;}
+    div.block-container {padding-top: 1rem; padding-bottom: 1rem;}
+    </style>
+""", unsafe_allow_html=True)
+
 # 画像フォルダのローカルパス定義 (Streamlit Cloudでは永続化されないため注意)
 BASE_DIR = pathlib.Path(__file__).parent
 IMAGE_DIR = BASE_DIR / "images"
 os.makedirs(IMAGE_DIR, exist_ok=True)
 
-st.title("💪 筋トレ記録＋体画像管理アプリ")
+st.title("筋トレ記録・管理アプリ")
 
 # 接続失敗時は処理を停止
 if client is None:
     st.stop()
     
 # --- データ取得 ---
-# 【修正】clientとSPREADSHEET_NAMEを渡す
-records = fetch_all_records(client, SPREADSHEET_NAME)
-
-# 【修正】gspreadから取得したデータはすべて文字列なので、ここで型変換
-df = pd.DataFrame(records, columns=["ID", "日付", "種目", "重量(kg)", "回数", "セット数", "メモ"])
+df = fetch_all_records_df(client, SPREADSHEET_NAME)
 goals = fetch_all_goals(client, SPREADSHEET_NAME)
 
 if len(df) > 0:
@@ -79,7 +63,7 @@ if len(df) > 0:
     df["セット数"] = pd.to_numeric(df["セット数"], errors='coerce').astype('Int64')
 
 # --- 入力フォーム ---
-st.header("🏋️ トレーニング記録を追加")
+st.header("トレーニング記録を追加")
 with st.form("record_form"):
     record_date = st.date_input("日付", date.today())
     
@@ -100,7 +84,7 @@ with st.form("record_form"):
     reps = st.number_input("回数", min_value=1, step=1)
     sets = st.number_input("セット数", min_value=1, step=1, value=3)
     memo = st.text_area("メモ（任意）")
-    submitted = st.form_submit_button("💾 記録する")
+    submitted = st.form_submit_button("記録する")
 
     if submitted:
         if exercise and exercise.strip():
@@ -110,7 +94,7 @@ with st.form("record_form"):
             st.rerun()
 
 # --- 目標設定 ---
-st.header("🎯 目標設定")
+st.header("目標設定")
 with st.expander("目標を追加・管理", expanded=False):
     with st.form("goal_form"):
         
@@ -129,7 +113,7 @@ with st.expander("目標を追加・管理", expanded=False):
         goal_value = st.number_input("目標値（総セット数）", min_value=1, step=1, value=15)
         goal_start_date = st.date_input("目標開始日", date.today())
         
-        goal_submitted = st.form_submit_button("✨ 目標を設定する")
+        goal_submitted = st.form_submit_button("目標を設定する")
 
         if goal_submitted:
             period_type_db = "weekly" if "weekly" in goal_period_type else "monthly"
@@ -149,7 +133,7 @@ with st.expander("目標を追加・管理", expanded=False):
         st.dataframe(goals_df, use_container_width=True)
         
         delete_goal_id = st.number_input("削除する目標のID", min_value=0, step=1)
-        if st.button("🗑️ 目標を削除"):
+        if st.button("目標を削除"):
             if delete_goal_id in goals_df.index:
                  # 【修正】clientとSPREADSHEET_NAMEを渡す
                 delete_goal(client, SPREADSHEET_NAME, delete_goal_id)
@@ -159,7 +143,7 @@ with st.expander("目標を追加・管理", expanded=False):
                 st.error("指定されたIDの目標が見つかりません。")
 
 # --- 目標達成率の可視化 (ロジックは変更なし) ---
-st.header("📈 目標達成の進捗")
+st.header("目標達成の進捗")
 # ... (既存の達成率計算と表示ロジックをここに続ける) ...
 
 def get_period_dates(start_date_str, period_type):
@@ -200,7 +184,7 @@ else:
         start_of_period, end_of_period = get_period_dates(start_date_str, period_type)
 
         if start_of_period is None:
-             st.markdown(f"**🎯 {exercise}** ({period_type}目標: {int(target_value)}セット)")
+             st.markdown(f"**{exercise}** ({period_type}目標: {int(target_value)}セット)")
              st.info(f"目標開始日（{start_date_str}）が未来のため、計測を開始していません。")
              continue
 
@@ -216,7 +200,7 @@ else:
         achievement_rate = achieved_value / target_value if target_value > 0 else 0
         display_rate = min(achievement_rate, 1.0) 
         
-        st.markdown(f"**🎯 {exercise}** ({period_type}目標: {int(target_value)}セット)")
+        st.markdown(f"**{exercise}** ({period_type}目標: {int(target_value)}セット)")
         st.caption(f"計測期間: {start_of_period.isoformat()} 〜 {end_of_period.isoformat()}")
 
         st.progress(display_rate, text=f"達成率: {achieved_value:.0f} / {target_value:.0f} セット ({display_rate:.1%})")
@@ -226,18 +210,18 @@ else:
             st.success("🏆 目標達成おめでとうございます！")
 
 # --- カレンダー表示 (ロジックは変更なし) ---
-st.header("📅 カレンダー")
+st.header("カレンダー")
 # ... (既存のコード) ...
 
 # --- 選択日の表示（編集・削除機能を含む） ---
-st.header("📝 記録詳細")
+st.header("記録詳細")
 selected_date = st.date_input("日付を選択して詳細を表示", date.today())
 day_df = df[df["日付"] == selected_date.isoformat()].set_index("ID")
 # day_images = fetch_images_by_date(client, SPREADSHEET_NAME, selected_date.isoformat()) # (画像は動作しない)
 
 # ... (既存の編集・削除ロジック) ...
 if len(day_df) > 0:
-    st.subheader(f"📖 {selected_date} のトレーニング記録")
+    st.subheader(f"{selected_date} のトレーニング記録")
 
     display_df = day_df.drop(columns=["日付", "メモ"], errors='ignore')
     st.dataframe(display_df, use_container_width=True)
@@ -249,15 +233,14 @@ if len(day_df) > 0:
     
     for i, (record_id, row) in enumerate(day_df.iterrows()):
         with cols[i]:
-            if st.button(f"✏️ 編集 ({row['種目']})", key=f"edit_btn_{record_id}"):
+            if st.button(f"編集 ({row['種目']})", key=f"edit_btn_{record_id}"):
                 st.session_state["edit_record_id"] = record_id
                 st.session_state["edit_data"] = row.to_dict()
                 st.session_state["show_edit_form"] = True
                 st.rerun()
 
-            if st.button(f"🗑️ 削除 ({row['種目']})", key=f"delete_btn_{record_id}"):
-                if st.warning(f"「{row['種目']}」の記録を本当に削除しますか？"):
-                     # 【修正】clientとSPREADSHEET_NAMEを渡す
+            if st.button(f"削除 ({row['種目']})", key=f"delete_btn_{record_id}"):
+                if st.confirm(f"「{row['種目']}」を削除してもよいですか？"):
                     delete_record(client, SPREADSHEET_NAME, record_id)
                     st.success("✅ 記録を削除しました！")
                     st.rerun()
@@ -272,7 +255,7 @@ if st.session_state["show_edit_form"]:
     record_id = st.session_state["edit_record_id"]
     data = st.session_state["edit_data"]
     
-    with st.expander(f"**📝 記録の編集 ({data['種目']})**", expanded=True):
+    with st.expander(f"**記録の編集 ({data['種目']})**", expanded=True):
         with st.form("edit_record_form"):
             current_date = pd.to_datetime(data['日付']).date() 
             
@@ -298,7 +281,7 @@ if st.session_state["show_edit_form"]:
                     edit_weight, edit_reps, edit_sets, edit_memo
                 )
                 st.session_state["show_edit_form"] = False
-                st.success("🎉 記録を更新しました！")
+                st.success("記録を更新しました！")
                 st.rerun()
                 
             if canceled:
