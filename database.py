@@ -30,17 +30,17 @@ def insert_record(client, spreadsheet_name, date, exercise, weight, reps, sets, 
     ws = get_worksheet(client, spreadsheet_name, SHEET_RECORD)
     if ws is None: return
 
-    new_id = len(ws.col_values(1))
-    
-    data = [new_id, date, exercise, float(weight), int(reps), int(sets), memo]
-    ws.append_row(data)
+    ids = ws.col_values(1)[1:]  # ヘッダー除外
+    new_id = max(map(int, ids), default=0) + 1
+    ws.append_row([new_id, date, exercise, float(weight), int(reps), int(sets), memo])
 
-def fetch_all_records(client, spreadsheet_name):
-    ws = get_worksheet(client, spreadsheet_name, SHEET_RECORD)
-    if ws is None: return []
-
-    data = ws.get_all_values()
-    return data[1:] if data and len(data) > 1 else [] # ヘッダー行を除いて返す
+def fetch_all_records_df(client, spreadsheet_name):
+    data = fetch_all_records(client, spreadsheet_name)
+    if not data:
+        return pd.DataFrame(columns=["ID", "日付", "種目", "重量(kg)", "回数", "セット数", "メモ"])
+    df = pd.DataFrame(data, columns=["ID", "日付", "種目", "重量(kg)", "回数", "セット数", "メモ"])
+    df = df.apply(pd.to_numeric, errors="ignore")
+    return df
 
 def update_record(client, spreadsheet_name, record_id, date, exercise, weight, reps, sets, memo):
     ws = get_worksheet(client, spreadsheet_name, SHEET_RECORD)
@@ -108,5 +108,4 @@ def fetch_images_by_date(client, spreadsheet_name, date):
     return []
 
 def fetch_all_dates_with_images(client, spreadsheet_name):
-    return []
     return []
