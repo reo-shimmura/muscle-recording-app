@@ -14,6 +14,7 @@ from database import (
     insert_image, fetch_images_by_date, fetch_all_dates_with_images,
     insert_goal, fetch_all_goals, delete_goal
 )
+from drive_utils import upload_image_to_drive
 from streamlit_calendar import calendar
 from streamlit_image_comparison import image_comparison
 
@@ -84,12 +85,20 @@ with st.form("record_form"):
     reps = st.number_input("回数", min_value=1, step=1)
     sets = st.number_input("セット数", min_value=1, step=1, value=3)
     memo = st.text_area("メモ（任意）")
+    uploaded_file = st.file_uploader("体画像をアップロード（任意）", type=["jpg", "jpeg", "png"])
     submitted = st.form_submit_button("記録する")
 
     if submitted:
         if exercise and exercise.strip():
-            # 【修正】clientとSPREADSHEET_NAMEを渡す
-            insert_record(client, SPREADSHEET_NAME, record_date.isoformat(), exercise, weight, reps, sets, memo)
+            image_url = ""
+            if uploaded_file:
+                filename = f"{record_date}_{exercise}.jpg"
+                with st.spinner("画像をアップロード中..."):
+                    image_url = upload_image_to_drive(uploaded_file, filename)
+                st.image(image_url, caption="アップロード完了", use_container_width=True)
+
+            # スプレッドシートに記録を追加
+            insert_record(client, SPREADSHEET_NAME, record_date.isoformat(), exercise, weight, reps, sets, memo + (f"\n📷: {image_url}" if image_url else ""))
             st.success("✅ 記録を保存しました！")
             st.rerun()
 
@@ -230,6 +239,13 @@ if len(day_df) > 0:
     st.markdown("**操作**")
     cols_count = len(day_df)
     cols = st.columns(cols_count)
+
+    # メモ内のDriveリンクを検出して画像として表示
+    for _, row in day_df.iterrows():
+        if "https://drive.google.com" in str(row.get("メモ", "")):
+            url_start = row["メモ"].find("https://drive.google.com")
+            image_url = row["メモ"][url_start:].strip()
+            st.image(image_url, caption=f"{row['種目']} の体画像", use_container_width=True)
     
     for i, (record_id, row) in enumerate(day_df.iterrows()):
         with cols[i]:

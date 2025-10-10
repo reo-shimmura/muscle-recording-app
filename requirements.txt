@@ -6,3 +6,7 @@ streamlit-image-comparison
 gspread
 gspread-dataframe
 Pillow
+google-api-python-client
+google-auth
+google-auth-httplib2
+google-auth-oauthlib
