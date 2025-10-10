@@ -1,124 +1,192 @@
-# database.py
-import sqlite3
-import pathlib
+# database.py - Google Sheets バージョン
+import streamlit as st
+import gspread
+import pandas as pd
+import pathlib # ファイルパスの操作は残しますが、DB_PATHの利用はなくなります
 
-BASE_DIR = pathlib.Path(__file__).parent
-DB_PATH = BASE_DIR / "data" / "muscle.db" 
+# --- Google Sheets 接続設定 ---
 
+# 【重要】Streamlit secretsからサービスアカウント情報を取得して接続
+@st.cache_resource(ttl=3600)
+def get_gspread_client():
+    """Google Sheetsクライアントを接続し、キャッシュする"""
+    try:
+        # st.secrets['gcp_service_account'] は secrets.toml に設定したキー名
+        client = gspread.service_account_from_dict(st.secrets["gcp_service_account"])
+        return client
+    except Exception as e:
+        st.error(f"Google Sheets への接続に失敗しました。secrets.tomlの設定を確認してください: {e}")
+        return None
+
+# 【重要】スプレッドシートのURLまたは名前
+SPREADSHEET_NAME = "筋トレ記録アプリ DB" 
+SHEET_RECORD = "records"
+SHEET_GOAL = "goals"
+
+# 初期化関数（今回は接続確認とヘッダー確認のみ）
 def init_db():
-    with sqlite3.connect(DB_PATH) as conn:
-        c = conn.cursor()
-        c.execute('''
-            CREATE TABLE IF NOT EXISTS records (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                date TEXT,
-                exercise TEXT,
-                weight REAL,
-                reps INTEGER,
-                sets INTEGER,
-                memo TEXT
-            )
-        ''')
-        c.execute('''
-            CREATE TABLE IF NOT EXISTS body_images (
-                date TEXT,
-                file_path TEXT
-            )
-        ''')
-        c.execute('''
-            CREATE TABLE IF NOT EXISTS goals (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                exercise TEXT NOT NULL,         -- 種目名 (例: ベンチプレス)
-                period_type TEXT NOT NULL,      -- 期間の種類 (weekly, monthly)
-                target_type TEXT NOT NULL,      -- 目標の種類 (sets, volume, etc.)
-                target_value REAL NOT NULL,     -- 目標値
-                start_date TEXT NOT NULL        -- 目標の開始日
-            )
-        ''')
-        conn.commit()
+    client = get_gspread_client()
+    if client is None:
+        return
+    try:
+        # スプレッドシートを開く
+        client.open(SPREADSHEET_NAME)
+        # st.success("Google Sheets 接続 OK")
+    except gspread.exceptions.SpreadsheetNotFound:
+        st.error(f"スプレッドシート '{SPREADSHEET_NAME}' が見つかりません。名前を確認してください。")
+    except Exception as e:
+        st.error(f"データベースの初期化中にエラーが発生しました: {e}")
+
+# --- ヘルパー関数 ---
+def get_worksheet(sheet_name):
+    """ワークシートを取得するヘルパー関数"""
+    client = get_gspread_client()
+    if client is None:
+        return None
+    try:
+        ss = client.open(SPREADSHEET_NAME)
+        return ss.worksheet(sheet_name)
+    except Exception as e:
+        st.error(f"{sheet_name} シートの取得に失敗しました: {e}")
+        return None
+
+# --- CRUD 関数群 ---
 
 def insert_record(date, exercise, weight, reps, sets, memo):
-    with sqlite3.connect(DB_PATH) as conn: # withが終了すると自動でconn.close()される
-        c = conn.cursor()
-        c.execute("INSERT INTO records (date, exercise, weight, reps, sets, memo) VALUES (?, ?, ?, ?, ?, ?)", 
-                   (date, exercise, weight, reps, sets, memo))
-        conn.commit()
+    ws = get_worksheet(SHEET_RECORD)
+    if ws is None: return
 
-def insert_image(date, file_path):
-    with sqlite3.connect(DB_PATH) as conn:
-        c = conn.cursor()
-        c.execute("INSERT INTO body_images VALUES (?, ?)", (date, file_path))
-        conn.commit()
-
-def insert_goal(exercise, period_type, target_type, target_value, start_date):
-    """新しい目標をデータベースに挿入する"""
-    with sqlite3.connect(DB_PATH) as conn:
-        c = conn.cursor()
-        c.execute("INSERT INTO goals (exercise, period_type, target_type, target_value, start_date) VALUES (?, ?, ?, ?, ?)", 
-                  (exercise, period_type, target_type, target_value, start_date))
-        conn.commit()
+    # 新しいIDを採番 (既存の行数 + 1を簡易IDとする)
+    new_id = len(ws.col_values(1)) 
+    
+    # 追加するデータ
+    data = [
+        new_id,
+        date,
+        exercise,
+        float(weight),
+        int(reps),
+        int(sets),
+        memo
+    ]
+    # スプレッドシートの最終行に追加
+    ws.append_row(data)
 
 def fetch_all_records():
-    data = []
-    with sqlite3.connect(DB_PATH) as conn:
-        c = conn.cursor()
-        c.execute("SELECT id, date, exercise, weight, reps, sets, memo FROM records ORDER BY date DESC")
-        data = c.fetchall()
-    return data
+    ws = get_worksheet(SHEET_RECORD)
+    if ws is None: return []
+
+    # ヘッダー行を含めて全てのデータを取得
+    data = ws.get_all_values()
+    if not data:
+        return []
+
+    # ヘッダー行を除いて返す
+    return data[1:] 
+
 
 def update_record(record_id, date, exercise, weight, reps, sets, memo):
-    with sqlite3.connect(DB_PATH) as conn:
-        c = conn.cursor()
-        c.execute("""
-            UPDATE records 
-            SET date = ?, exercise = ?, weight = ?, reps = ?, memo = ?
-            WHERE id = ?
-        """, (date, exercise, weight, reps, sets, memo, record_id))
-        conn.commit()
+    ws = get_worksheet(SHEET_RECORD)
+    if ws is None: return
+
+    # IDでレコードを検索し、行番号を取得
+    try:
+        # 1列目（ID列）で該当IDを検索し、最初に見つかったセルの行番号を取得
+        cell = ws.find(str(record_id), in_column=1)
+        row_num = cell.row
+        
+        # 変更するデータ
+        new_data = [
+            int(record_id),
+            date,
+            exercise,
+            float(weight),
+            int(reps),
+            int(sets),
+            memo
+        ]
+        
+        # 該当行を新しいデータで更新（A列からG列まで）
+        ws.update(f'A{row_num}:G{row_num}', [new_data])
+        
+    except gspread.exceptions.CellNotFound:
+        st.error(f"更新対象のID: {record_id} が見つかりませんでした。")
+    except Exception as e:
+        st.error(f"レコードの更新中にエラーが発生しました: {e}")
+
 
 def delete_record(record_id):
-    with sqlite3.connect(DB_PATH) as conn:
-        c = conn.cursor()
-        c.execute("DELETE FROM records WHERE id = ?", (record_id,))
-        conn.commit()
+    ws = get_worksheet(SHEET_RECORD)
+    if ws is None: return
 
-def fetch_images_by_date(date):
-    data = []
-    with sqlite3.connect(DB_PATH) as conn:
-        c = conn.cursor()
-        c.execute("SELECT file_path FROM body_images WHERE date = ?", (date,))
-        # 取得したファイルパスからファイル名を取り出してタプルに変換する
+    try:
+        cell = ws.find(str(record_id), in_column=1)
+        # 該当行を削除
+        ws.delete_rows(cell.row)
+    except gspread.exceptions.CellNotFound:
+        st.error(f"削除対象のID: {record_id} が見つかりませんでした。")
+    except Exception as e:
+        st.error(f"レコードの削除中にエラーが発生しました: {e}")
         
-        # 変更点：ファイルパスだけでなく、ファイル名も返すようにする
-        results = c.fetchall()
-        for row in results:
-            file_path = row[0]
-            # pathlibを使ってファイル名部分だけを取り出す
-            file_name = pathlib.Path(file_path).name 
-            data.append((file_name, file_path))
-            
-    return data # 例: [('2023-10-01_front.jpg', 'images/2023-10-01_front.jpg'), ...]
+# --- 目標（Goals）関連の関数 ---
 
-def fetch_all_dates_with_images():
-    data = []
-    with sqlite3.connect(DB_PATH) as conn:
-        c = conn.cursor()
-        c.execute("SELECT DISTINCT date FROM body_images")
-        data = [row[0] for row in c.fetchall()]
-    return data
+# 目標関連も同様に書き換え (省略)
+def insert_goal(exercise, period_type, target_type, target_value, start_date):
+    ws = get_worksheet(SHEET_GOAL)
+    if ws is None: return
+    
+    # 新しいIDを採番 (既存の行数 + 1を簡易IDとする)
+    new_id = len(ws.col_values(1)) 
+
+    data = [
+        new_id,
+        exercise, 
+        period_type, 
+        target_type, 
+        float(target_value), 
+        start_date
+    ]
+    ws.append_row(data)
 
 def fetch_all_goals():
-    """設定されている全ての目標を取得する"""
-    data = []
-    with sqlite3.connect(DB_PATH) as conn:
-        c = conn.cursor()
-        c.execute("SELECT id, exercise, period_type, target_type, target_value, start_date FROM goals")
-        data = c.fetchall()
-    return data
+    ws = get_worksheet(SHEET_GOAL)
+    if ws is None: return []
+
+    data = ws.get_all_values()
+    if not data:
+        return []
+
+    # ヘッダー行を除いて返す
+    return data[1:]
 
 def delete_goal(goal_id):
-    """指定されたIDの目標を削除する"""
-    with sqlite3.connect(DB_PATH) as conn:
-        c = conn.cursor()
-        c.execute("DELETE FROM goals WHERE id = ?", (goal_id,))
-        conn.commit()
+    ws = get_worksheet(SHEET_GOAL)
+    if ws is None: return
+    
+    try:
+        cell = ws.find(str(goal_id), in_column=1)
+        ws.delete_rows(cell.row)
+    except gspread.exceptions.CellNotFound:
+        st.error(f"削除対象の目標ID: {goal_id} が見つかりませんでした。")
+    except Exception as e:
+        st.error(f"目標の削除中にエラーが発生しました: {e}")
+
+# --- 体画像関連の関数は、ファイルの読み書きのためそのまま残すか、別の方法を検討してください ---
+
+# fetch_images_by_date と fetch_all_dates_with_images は、画像ファイルパスの
+# 記録と取得なので、SQLiteの代わりに Google Sheets を使います
+# ※ 画像ファイルの本体は Streamlit Cloud では永続化できない点に注意
+
+def insert_image(date, file_path):
+    # 画像ファイルパスを記録するためのシート（今回は records シートを使用すると仮定）
+    # ※ 本来は body_images シートが必要です。構造をシンプルにするため、このまま進めます
+    # （画像パス管理はファイルストレージの問題があるので、このままでは不完全です）
+    pass # 一旦処理をスキップ
+    # Google Sheetsで画像パスを記録しても、ファイル本体が消えるため、この機能はクラウドでは別途検討が必要です
+
+def fetch_images_by_date(date):
+    # 画像パスはクラウドで永続化できないため、一旦空リストを返します
+    return []
+
+def fetch_all_dates_with_images():
+    return []

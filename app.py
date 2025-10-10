@@ -59,7 +59,15 @@ if uploaded_file is not None:
 
 # --- データ取得 ---
 records = fetch_all_records()
+
+# 【変更】gspreadから取得したデータはすべて文字列なので、ここで数値型に変換
 df = pd.DataFrame(records, columns=["ID", "日付", "種目", "重量(kg)", "回数", "セット数", "メモ"])
+if len(df) > 0:
+    # 数値カラムを型変換
+    df["ID"] = pd.to_numeric(df["ID"], errors='coerce').astype('Int64')
+    df["重量(kg)"] = pd.to_numeric(df["重量(kg)"], errors='coerce')
+    df["回数"] = pd.to_numeric(df["回数"], errors='coerce').astype('Int64')
+    df["セット数"] = pd.to_numeric(df["セット数"], errors='coerce').astype('Int64')
 
 # --- カレンダー表示 ---
 st.header("カレンダー")
