@@ -18,6 +18,8 @@ from drive_utils import upload_image_to_drive
 from streamlit_calendar import calendar
 from streamlit_image_comparison import image_comparison
 
+st.set_page_config(page_title="筋トレログ", page_icon="🏋️", layout="wide")
+
 # --- 接続設定 ---
 SPREADSHEET_NAME = "筋トレ記録アプリ DB" 
 
