@@ -1,22 +1,8 @@
 # database.py - Google Sheets バージョン
-import streamlit as st
+# import streamlit as st
 import gspread
 import pandas as pd
 import pathlib # ファイルパスの操作は残しますが、DB_PATHの利用はなくなります
-
-# --- Google Sheets 接続設定 ---
-
-# 【重要】Streamlit secretsからサービスアカウント情報を取得して接続
-@st.cache_resource(ttl=3600)
-def get_gspread_client():
-    """Google Sheetsクライアントを接続し、キャッシュする"""
-    try:
-        # st.secrets['gcp_service_account'] は secrets.toml に設定したキー名
-        client = gspread.service_account_from_dict(st.secrets["gcp_service_account"])
-        return client
-    except Exception as e:
-        st.error(f"Google Sheets への接続に失敗しました。secrets.tomlの設定を確認してください: {e}")
-        return None
 
 # 【重要】スプレッドシートのURLまたは名前
 SPREADSHEET_NAME = "筋トレ記録アプリ DB" 
@@ -24,8 +10,8 @@ SHEET_RECORD = "records"
 SHEET_GOAL = "goals"
 
 # 初期化関数（今回は接続確認とヘッダー確認のみ）
-def init_db():
-    client = get_gspread_client()
+def init_db(client):
+    #client = get_gspread_client()
     if client is None:
         return
     try:
@@ -38,9 +24,9 @@ def init_db():
         st.error(f"データベースの初期化中にエラーが発生しました: {e}")
 
 # --- ヘルパー関数 ---
-def get_worksheet(sheet_name):
+def get_worksheet(client, sheet_name):
     """ワークシートを取得するヘルパー関数"""
-    client = get_gspread_client()
+    # client = get_gspread_client()
     if client is None:
         return None
     try:
@@ -52,8 +38,8 @@ def get_worksheet(sheet_name):
 
 # --- CRUD 関数群 ---
 
-def insert_record(date, exercise, weight, reps, sets, memo):
-    ws = get_worksheet(SHEET_RECORD)
+def insert_record(client, date, exercise, weight, reps, sets, memo):
+    ws = get_worksheet(client, SHEET_RECORD)
     if ws is None: return
 
     # 新しいIDを採番 (既存の行数 + 1を簡易IDとする)
@@ -72,8 +58,8 @@ def insert_record(date, exercise, weight, reps, sets, memo):
     # スプレッドシートの最終行に追加
     ws.append_row(data)
 
-def fetch_all_records():
-    ws = get_worksheet(SHEET_RECORD)
+def fetch_all_records(client):
+    ws = get_worksheet(client, SHEET_RECORD)
     if ws is None: return []
 
     # ヘッダー行を含めて全てのデータを取得
@@ -85,8 +71,8 @@ def fetch_all_records():
     return data[1:] 
 
 
-def update_record(record_id, date, exercise, weight, reps, sets, memo):
-    ws = get_worksheet(SHEET_RECORD)
+def update_record(client, record_id, date, exercise, weight, reps, sets, memo):
+    ws = get_worksheet(client, SHEET_RECORD)
     if ws is None: return
 
     # IDでレコードを検索し、行番号を取得
@@ -115,8 +101,8 @@ def update_record(record_id, date, exercise, weight, reps, sets, memo):
         st.error(f"レコードの更新中にエラーが発生しました: {e}")
 
 
-def delete_record(record_id):
-    ws = get_worksheet(SHEET_RECORD)
+def delete_record(client, record_id):
+    ws = get_worksheet(client, SHEET_RECORD)
     if ws is None: return
 
     try:
@@ -131,8 +117,8 @@ def delete_record(record_id):
 # --- 目標（Goals）関連の関数 ---
 
 # 目標関連も同様に書き換え (省略)
-def insert_goal(exercise, period_type, target_type, target_value, start_date):
-    ws = get_worksheet(SHEET_GOAL)
+def insert_goal(client, exercise, period_type, target_type, target_value, start_date):
+    ws = get_worksheet(client, SHEET_GOAL)
     if ws is None: return
     
     # 新しいIDを採番 (既存の行数 + 1を簡易IDとする)
@@ -148,8 +134,8 @@ def insert_goal(exercise, period_type, target_type, target_value, start_date):
     ]
     ws.append_row(data)
 
-def fetch_all_goals():
-    ws = get_worksheet(SHEET_GOAL)
+def fetch_all_goals(client):
+    ws = get_worksheet(client, SHEET_GOAL)
     if ws is None: return []
 
     data = ws.get_all_values()
@@ -159,8 +145,8 @@ def fetch_all_goals():
     # ヘッダー行を除いて返す
     return data[1:]
 
-def delete_goal(goal_id):
-    ws = get_worksheet(SHEET_GOAL)
+def delete_goal(client, goal_id):
+    ws = get_worksheet(client, SHEET_GOAL)
     if ws is None: return
     
     try:

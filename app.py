@@ -15,19 +15,42 @@ from database import (
 from streamlit_calendar import calendar
 from streamlit_image_comparison import image_comparison
 import pathlib
+import gspread
 
 # プロジェクトのルートパスを取得
 BASE_DIR = pathlib.Path(__file__).parent
 # DB_PATH = BASE_DIR / "data" / "muscle.db" 
 IMAGE_DIR = BASE_DIR / "images"
 
+# --- Google Sheets 接続設定（database.pyから移行） ---
+SPREADSHEET_NAME = "筋トレ記録アプリ DB"
+
+# 【重要】Streamlit secretsからサービスアカウント情報を取得して接続
+# @st.cache_resource でキャッシュする
+@st.cache_resource(ttl=3600)
+def get_gspread_client():
+    """Google Sheetsクライアントを接続し、キャッシュする"""
+    try:
+        # st.secrets は app.py から呼び出すのが安全
+        client = gspread.service_account_from_dict(st.secrets["gcp_service_account"])
+        return client
+    except Exception as e:
+        st.error(f"Google Sheets への接続に失敗しました: {e}")
+        return None
+        
+client = get_gspread_client()
+
 # --- 初期設定 ---
 st.set_page_config(page_title="筋トレ記録アプリ", layout="wide")
-init_db()
+# init_db()
 os.makedirs(IMAGE_DIR, exist_ok=True)
 os.makedirs(BASE_DIR / "data", exist_ok=True)
 
 st.title("筋トレ記録＋体画像管理アプリ")
+
+# init_db の呼び出し時に client を渡す
+if client is not None:
+    init_db(client) # <-- 修正: client を渡す
 
 # --- 入力フォーム ---
 st.header("トレーニング記録を追加")
@@ -42,7 +65,7 @@ with st.form("record_form"):
 
     if submitted:
         if exercise.strip():
-            insert_record(record_date.isoformat(), exercise, weight, reps, sets, memo)
+            insert_record(client, record_date.isoformat(), exercise, weight, reps, sets, memo)
             st.success("✅ 記録を保存しました！")
 
 # --- 体画像アップロード ---
@@ -58,7 +81,7 @@ if uploaded_file is not None:
     st.success("画像を保存しました！")
 
 # --- データ取得 ---
-records = fetch_all_records()
+records = fetch_all_records(client)
 
 # 【変更】gspreadから取得したデータはすべて文字列なので、ここで数値型に変換
 df = pd.DataFrame(records, columns=["ID", "日付", "種目", "重量(kg)", "回数", "セット数", "メモ"])
@@ -84,7 +107,7 @@ day_images = fetch_images_by_date(selected_date.isoformat())
 
 # --- 目標設定 ---
 st.header("目標設定")
-goals = fetch_all_goals() # 目標データを取得（Pandas変換前）
+goals = fetch_all_goals(client) # 目標データを取得（Pandas変換前）
 
 with st.expander("目標を追加・管理", expanded=False):
     with st.form("goal_form"):
@@ -112,6 +135,7 @@ with st.expander("目標を追加・管理", expanded=False):
             target_type_db = "sets"
             
             insert_goal(
+                client,
                 goal_exercise, 
                 period_type_db, 
                 target_type_db, 
@@ -131,7 +155,7 @@ with st.expander("目標を追加・管理", expanded=False):
         delete_id = st.number_input("削除する目標のID", min_value=0, step=1)
         if st.button("🗑️ 目標を削除"):
             try:
-                delete_goal(delete_id)
+                delete_goal(client, delete_id)
                 st.success(f"ID: {delete_id} の目標を削除しました。")
                 st.rerun()
             except:
@@ -170,7 +194,7 @@ if len(day_df) > 0:
                 # 削除確認
                 if st.warning(f"「{row['種目']}」の記録を本当に削除しますか？"):
                      # 削除実行
-                    delete_record(record_id)
+                    delete_record(client, record_id)
                     st.success("✅ 記録を削除しました！")
                     st.rerun() # 画面を更新
 
@@ -403,6 +427,7 @@ if st.session_state["show_edit_form"]:
 
             if edited:
                 update_record(
+                    client,
                     record_id, 
                     edit_date.isoformat(), 
                     edit_exercise, 
