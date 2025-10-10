@@ -5,3 +5,4 @@ streamlit-calendar
 streamlit-image-comparison
 gspread
 gspread-dataframe
+Pillow
