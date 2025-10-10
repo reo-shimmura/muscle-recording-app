@@ -1,0 +1,14 @@
+# データベースファイル
+/data/muscle.db
+
+# 画像フォルダ (管理対象外とすることが多い)
+/images/
+
+# Pythonのキャッシュや環境ファイル
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Streamlitの一時ファイル
+.streamlit/
