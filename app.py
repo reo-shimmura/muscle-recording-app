@@ -22,17 +22,30 @@ SPREADSHEET_NAME = "筋トレ記録アプリ DB"
 
 @st.cache_resource(ttl=3600)
 def get_gspread_client():
-    """Streamlitのキャッシュを使ってGoogle Sheetsクライアントを生成"""
+    """Streamlitのキャッシュを使ってGoogle Sheetsクライアントを生成（安全なチェック付き）"""
     try:
-        # secretsは app.py から呼び出すのが最も安全
-        client = gspread.service_account_from_dict(st.secrets["gcp_service_account"])
-        # 初回接続時にスプレッドシートの存在確認
-        client.open(SPREADSHEET_NAME) 
-        st.success("✅ Google Sheets に接続しました！")
+        sa = st.secrets.get("gcp_service_account")
+        if sa is None:
+            st.error("🚨 secrets に gcp_service_account が設定されていません。secrets.toml にサービスアカウントのJSONを追加してください。")
+            return None
+
+        client = gspread.service_account_from_dict(sa)
+
+        # スプレッドシート存在チェック（見つからなくても client は返すが warning を出す）
+        try:
+            client.open(SPREADSHEET_NAME)
+            st.success("✅ Google Sheets に接続しました！")
+        except Exception as e:
+            st.warning(f"スプレッドシート '{SPREADSHEET_NAME}' が見つかりません（サービスアカウントに共有済みか確認してください）。詳細: {e}")
+
         return client
+
     except Exception as e:
-        st.error("🚨 Google Sheets への接続に失敗しました。")
-        st.error("以下の点を確認してください: 1. secrets.toml の設定、2. スプレッドシート名、3. サービスアカウントの共有設定")
+        # 詳細な例外を表示してデバッグしやすくする
+        import traceback
+        tb = traceback.format_exc()
+        st.error("🚨 Google Sheets への接続に失敗しました。詳細は下記です。")
+        st.text(tb)
         return None
 
 client = get_gspread_client()
