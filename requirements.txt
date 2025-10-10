@@ -3,5 +3,5 @@ pandas
 plotly-express
 streamlit-calendar
 streamlit-image-comparison
-gspread # <--- 追加
-gspread-dataframe # <--- 追加
+gspread
+gspread-dataframe
