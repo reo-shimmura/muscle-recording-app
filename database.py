@@ -34,6 +34,12 @@ def insert_record(client, spreadsheet_name, date, exercise, weight, reps, sets, 
     new_id = max(map(int, ids), default=0) + 1
     ws.append_row([new_id, date, exercise, float(weight), int(reps), int(sets), memo])
 
+def fetch_all_records(client, spreadsheet_name): 
+    ws = get_worksheet(client, spreadsheet_name, SHEET_RECORD) 
+    if ws is None: return [] 
+    data = ws.get_all_values() 
+    return data[1:] if data and len(data) > 1 else [] # ヘッダー行を除いて返す
+
 def fetch_all_records_df(client, spreadsheet_name):
     data = fetch_all_records(client, spreadsheet_name)
     if not data:
