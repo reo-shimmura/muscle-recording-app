@@ -40,6 +40,7 @@ IMAGE_DIR = BASE_DIR / "images"
 os.makedirs(IMAGE_DIR, exist_ok=True)
 SPREADSHEET_NAME = "筋トレ記録アプリ DB"
 
+
 # --- GSpread クライアント取得（キャッシュ） ---
 @st.cache_resource(show_spinner=False)
 def get_gspread_client():
@@ -55,6 +56,8 @@ client = get_gspread_client()
 # 接続確認
 if client is None:
     st.sidebar.error("Google Drive / Sheets クライアントの認証情報が見つかりません。st.secrets で設定してください。")
+    st.stop()
+
 
 # --- ユーティリティ関数 ---
 
@@ -63,8 +66,7 @@ def safe_to_numeric(df, col, dtype='Int64'):
         df[col] = pd.to_numeric(df[col], errors='coerce').astype(dtype)
     return df
 
-
-def reload_data():
+def reload_data(client, SPREADSHEET_NAME):
     """スプレッドシートから最新データを取得して前処理して返す"""
     df = fetch_all_records_df(client, SPREADSHEET_NAME) if client else pd.DataFrame()
     goals = fetch_all_goals(client, SPREADSHEET_NAME) if client else []
@@ -75,11 +77,12 @@ def reload_data():
         df["セット数"] = pd.to_numeric(df.get("セット数"), errors='coerce').astype('Int64')
     return df, goals
 
+
 # 初回ロード
-df, goals = reload_data()
+df, goals = reload_data(client, SPREADSHEET_NAME)
 
 # --- レイアウト: タイトル + サブ説明 ---
-st.title("🏋️ 筋トレ記録・管理アプリ（改良版）")
+st.title("筋トレ記録・管理アプリ")
 st.caption(f"最終更新: {date.today().isoformat()}")
 
 # サイドバー - 簡易ナビゲーション
