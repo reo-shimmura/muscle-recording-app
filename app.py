@@ -1,6 +1,3 @@
-# app_improved.py - Streamlit: 完全改良版（UI整理 + タブ構成 + カード風デザイン）
-# 前提: 既存の database.py, drive_utils.py, streamlit_calendar, streamlit_image_comparison が利用可能
-
 import streamlit as st
 import pandas as pd
 import plotly.express as px
