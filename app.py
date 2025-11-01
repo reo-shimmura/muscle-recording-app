@@ -137,7 +137,7 @@ with tab_write:
             else:
                 image_url = ""
                 if uploaded_file:
-                    filename = f"{record_date}_{exercise}.jpg"
+                    filename = f"{record_date}_{exercise}_{int(time.time())}.jpg"
                     with st.spinner("画像をアップロード中..."):
                         try:
                             image_url = upload_image_to_drive(uploaded_file, filename)
