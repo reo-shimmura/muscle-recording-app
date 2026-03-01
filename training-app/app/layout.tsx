@@ -15,6 +15,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "筋トレ記録アプリ",
   description: "トレーニング記録・目標管理・進捗追跡アプリ",
+  manifest: "../public/manifest.json",
 };
 
 export default function RootLayout({
