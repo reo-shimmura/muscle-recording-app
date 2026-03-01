@@ -15,7 +15,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "筋トレ記録アプリ",
   description: "トレーニング記録・目標管理・進捗追跡アプリ",
-  manifest: "../public/manifest.json",
+  manifest: "/manifest.json",
+  icons: {
+    icon: "/icon-192.png",
+    apple: "/icon-512.png",
+  },
 };
 
 export default function RootLayout({
