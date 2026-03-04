@@ -587,7 +587,7 @@ export default function Home() {
                               required
                             />
                           </div>
-                          <div style={{ marginRight: '1rem' }}>
+                          <div style={{ marginRight: '2rem' }}>
                             <label>セット数</label>
                             <input
                               type="number"
