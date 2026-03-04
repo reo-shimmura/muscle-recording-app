@@ -546,8 +546,8 @@ export default function Home() {
                     </div>
 
                     {setItemsDraft.map((item, idx) => (
-                      <div className="grid-cols-2" key={`draft-${idx}`}>
-                        <div className="element-container">
+                      <div className="grid-cols-2" key={`draft-${idx}`} style={{ marginBottom: '1.5rem' }}>
+                        <div>
                           <label>種目 {idx + 1}</label>
                           <input
                             type="text"
@@ -639,8 +639,8 @@ export default function Home() {
                     </div>
 
                     {newTemplateItems.map((item, idx) => (
-                      <div className="grid-cols-2" key={`new-template-${idx}`}>
-                        <div className="element-container">
+                      <div className="grid-cols-2" key={`new-template-${idx}`} style={{ marginBottom: '1.5rem' }}>
+                        <div>
                           <label>種目 {idx + 1}</label>
                           <input
                             type="text"
@@ -1130,12 +1130,14 @@ function CalendarGrid({
                 aspectRatio: '1',
                 padding: '0.5rem',
                 borderRadius: '8px',
-                border: isSelected ? '2px solid var(--primary)' : '1px solid var(--border-color)',
+                border: '2px solid transparent',
+                outline: isSelected ? '2px solid var(--primary)' : '1px solid var(--border-color)',
                 backgroundColor: hasRecord ? 'var(--primary)20' : 'transparent',
                 color: isSelected ? 'var(--primary)' : 'var(--foreground)',
                 fontWeight: isSelected || hasRecord ? 'bold' : 'normal',
                 cursor: 'pointer',
                 transition: 'all 0.2s ease',
+                boxSizing: 'border-box',
               }}
               onMouseEnter={(e) => {
                 if (!isSelected) {
