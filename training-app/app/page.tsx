@@ -75,6 +75,10 @@ export default function Home() {
   const [newTemplateItems, setNewTemplateItems] = useState<WorkoutSetItem[]>([
     { exercise: '', weight: 0, reps: 1, sets: 3 },
   ]);
+  const [setTabMode, setSetTabMode] = useState<'apply' | 'create'>('apply');
+  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
+  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -507,172 +511,191 @@ export default function Home() {
 
             {entryMode === 'set' && (
               <>
-                <div className="element-container">
-                  <h4>セットを作成</h4>
-                  <div className="grid-cols-2">
-                    <div>
-                      <label>セット名</label>
-                      <input
-                        type="text"
-                        value={newTemplateName}
-                        onChange={(e) => setNewTemplateName(e.target.value)}
-                        placeholder="例: 胸トレA"
-                      />
-                    </div>
-                    <div className="row" style={{ alignItems: 'end' }}>
-                      <button type="button" onClick={addSetTemplateRow}>種目を追加</button>
-                      <button type="button" className="btn-primary" onClick={saveSetTemplate}>セットを保存</button>
-                    </div>
-                  </div>
-
-                  {newTemplateItems.map((item, idx) => (
-                    <div className="grid-cols-2" key={`new-template-${idx}`}>
-                      <div className="element-container">
-                        <label>種目 {idx + 1}</label>
-                        <input
-                          type="text"
-                          value={item.exercise}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setNewTemplateItems((prev) => prev.map((row, rowIdx) => (rowIdx === idx ? { ...row, exercise: value } : row)));
-                          }}
-                          placeholder="例: ベンチプレス"
-                        />
-                      </div>
-                      <div className="row" style={{ alignItems: 'end' }}>
-                        <div>
-                          <label>重量</label>
-                          <input
-                            type="number"
-                            min="0"
-                            step="0.5"
-                            value={item.weight}
-                            onChange={(e) => {
-                              const value = Number(e.target.value);
-                              setNewTemplateItems((prev) => prev.map((row, rowIdx) => (rowIdx === idx ? { ...row, weight: value } : row)));
-                            }}
-                          />
-                        </div>
-                        <div>
-                          <label>回数</label>
-                          <input
-                            type="number"
-                            min="1"
-                            value={item.reps}
-                            onChange={(e) => {
-                              const value = Number(e.target.value);
-                              setNewTemplateItems((prev) => prev.map((row, rowIdx) => (rowIdx === idx ? { ...row, reps: value } : row)));
-                            }}
-                          />
-                        </div>
-                        <div>
-                          <label>セット数</label>
-                          <input
-                            type="number"
-                            min="1"
-                            value={item.sets}
-                            onChange={(e) => {
-                              const value = Number(e.target.value);
-                              setNewTemplateItems((prev) => prev.map((row, rowIdx) => (rowIdx === idx ? { ...row, sets: value } : row)));
-                            }}
-                          />
-                        </div>
-                        <button type="button" className="btn-danger" onClick={() => removeSetTemplateRow(idx)} disabled={newTemplateItems.length === 1}>削除</button>
-                      </div>
-                    </div>
-                  ))}
+                <div className="tabs">
+                  <button
+                    className={`tab-btn ${setTabMode === 'apply' ? 'active' : ''}`}
+                    onClick={() => setSetTabMode('apply')}
+                  >
+                    🎯 セット一括記録
+                  </button>
+                  <button
+                    className={`tab-btn ${setTabMode === 'create' ? 'active' : ''}`}
+                    onClick={() => setSetTabMode('create')}
+                  >
+                    ➕ 新規セット作成
+                  </button>
                 </div>
 
-                <form onSubmit={addRecordSet}>
-                  <h4>セットを選択して一括記録</h4>
-                  <div className="grid-cols-2">
-                    <div className="element-container">
-                      <label>セット選択</label>
-                      <select value={selectedTemplateId} onChange={(e) => handleTemplateSelect(e.target.value)}>
-                        <option value="">-- 保存済みセットを選択 --</option>
-                        {setTemplates.map((template) => (
-                          <option key={template.id} value={template.id}>{template.name}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="element-container">
-                      <label>日付</label>
-                      <input type="date" value={setDate} onChange={(e) => setSetDate(e.target.value)} required />
-                    </div>
-                  </div>
-
-                  {setItemsDraft.map((item, idx) => (
-                    <div className="grid-cols-2" key={`draft-${idx}`}>
+                {setTabMode === 'apply' && (
+                  <form onSubmit={addRecordSet}>
+                    <h4>セットを選択して一括記録</h4>
+                    <div className="grid-cols-2">
                       <div className="element-container">
-                        <label>種目 {idx + 1}</label>
+                        <label>セット選択</label>
+                        <select value={selectedTemplateId} onChange={(e) => handleTemplateSelect(e.target.value)}>
+                          <option value="">-- 保存済みセットを選択 --</option>
+                          {setTemplates.map((template) => (
+                            <option key={template.id} value={template.id}>{template.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="element-container">
+                        <label>日付</label>
+                        <input type="date" value={setDate} onChange={(e) => setSetDate(e.target.value)} required />
+                      </div>
+                    </div>
+
+                    {setItemsDraft.map((item, idx) => (
+                      <div className="grid-cols-2" key={`draft-${idx}`}>
+                        <div className="element-container">
+                          <label>種目 {idx + 1}</label>
+                          <input
+                            type="text"
+                            value={item.exercise}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              setSetItemsDraft((prev) => prev.map((row, rowIdx) => (rowIdx === idx ? { ...row, exercise: value } : row)));
+                            }}
+                            required
+                          />
+                        </div>
+                        <div className="row" style={{ alignItems: 'end' }}>
+                          <div>
+                            <label>重量</label>
+                            <input
+                              type="number"
+                              min="0"
+                              step="0.5"
+                              value={item.weight}
+                              onChange={(e) => {
+                                const value = Number(e.target.value);
+                                setSetItemsDraft((prev) => prev.map((row, rowIdx) => (rowIdx === idx ? { ...row, weight: value } : row)));
+                              }}
+                              required
+                            />
+                          </div>
+                          <div>
+                            <label>回数</label>
+                            <input
+                              type="number"
+                              min="1"
+                              value={item.reps}
+                              onChange={(e) => {
+                                const value = Number(e.target.value);
+                                setSetItemsDraft((prev) => prev.map((row, rowIdx) => (rowIdx === idx ? { ...row, reps: value } : row)));
+                              }}
+                              required
+                            />
+                          </div>
+                          <div>
+                            <label>セット数</label>
+                            <input
+                              type="number"
+                              min="1"
+                              value={item.sets}
+                              onChange={(e) => {
+                                const value = Number(e.target.value);
+                                setSetItemsDraft((prev) => prev.map((row, rowIdx) => (rowIdx === idx ? { ...row, sets: value } : row)));
+                              }}
+                              required
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+
+                    <div className="element-container">
+                      <label>メモ（任意）</label>
+                      <textarea
+                        value={setMemo}
+                        onChange={(e) => setSetMemo(e.target.value)}
+                        placeholder="セット全体に共通のメモ"
+                      />
+                    </div>
+
+                    <button type="submit" disabled={loading || setItemsDraft.length === 0}>
+                      {loading ? <span className="spinner"></span> : '🚀'} セット内容を一括記録
+                    </button>
+                  </form>
+                )}
+
+                {setTabMode === 'create' && (
+                  <div className="element-container">
+                    <h4>セットを作成</h4>
+                    <div className="grid-cols-2">
+                      <div>
+                        <label>セット名</label>
                         <input
                           type="text"
-                          value={item.exercise}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setSetItemsDraft((prev) => prev.map((row, rowIdx) => (rowIdx === idx ? { ...row, exercise: value } : row)));
-                          }}
-                          required
+                          value={newTemplateName}
+                          onChange={(e) => setNewTemplateName(e.target.value)}
+                          placeholder="例: 胸トレA"
                         />
                       </div>
                       <div className="row" style={{ alignItems: 'end' }}>
-                        <div>
-                          <label>重量</label>
-                          <input
-                            type="number"
-                            min="0"
-                            step="0.5"
-                            value={item.weight}
-                            onChange={(e) => {
-                              const value = Number(e.target.value);
-                              setSetItemsDraft((prev) => prev.map((row, rowIdx) => (rowIdx === idx ? { ...row, weight: value } : row)));
-                            }}
-                            required
-                          />
-                        </div>
-                        <div>
-                          <label>回数</label>
-                          <input
-                            type="number"
-                            min="1"
-                            value={item.reps}
-                            onChange={(e) => {
-                              const value = Number(e.target.value);
-                              setSetItemsDraft((prev) => prev.map((row, rowIdx) => (rowIdx === idx ? { ...row, reps: value } : row)));
-                            }}
-                            required
-                          />
-                        </div>
-                        <div>
-                          <label>セット数</label>
-                          <input
-                            type="number"
-                            min="1"
-                            value={item.sets}
-                            onChange={(e) => {
-                              const value = Number(e.target.value);
-                              setSetItemsDraft((prev) => prev.map((row, rowIdx) => (rowIdx === idx ? { ...row, sets: value } : row)));
-                            }}
-                            required
-                          />
-                        </div>
+                        <button type="button" onClick={addSetTemplateRow}>種目を追加</button>
+                        <button type="button" className="btn-primary" onClick={saveSetTemplate}>セットを保存</button>
                       </div>
                     </div>
-                  ))}
 
-                  <div className="element-container">
-                    <label>メモ（任意）</label>
-                    <textarea
-                      value={setMemo}
-                      onChange={(e) => setSetMemo(e.target.value)}
-                      placeholder="セット全体に共通のメモ"
-                    />
+                    {newTemplateItems.map((item, idx) => (
+                      <div className="grid-cols-2" key={`new-template-${idx}`}>
+                        <div className="element-container">
+                          <label>種目 {idx + 1}</label>
+                          <input
+                            type="text"
+                            value={item.exercise}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              setNewTemplateItems((prev) => prev.map((row, rowIdx) => (rowIdx === idx ? { ...row, exercise: value } : row)));
+                            }}
+                            placeholder="例: ベンチプレス"
+                          />
+                        </div>
+                        <div className="row" style={{ alignItems: 'end' }}>
+                          <div>
+                            <label>重量</label>
+                            <input
+                              type="number"
+                              min="0"
+                              step="0.5"
+                              value={item.weight}
+                              onChange={(e) => {
+                                const value = Number(e.target.value);
+                                setNewTemplateItems((prev) => prev.map((row, rowIdx) => (rowIdx === idx ? { ...row, weight: value } : row)));
+                              }}
+                            />
+                          </div>
+                          <div>
+                            <label>回数</label>
+                            <input
+                              type="number"
+                              min="1"
+                              value={item.reps}
+                              onChange={(e) => {
+                                const value = Number(e.target.value);
+                                setNewTemplateItems((prev) => prev.map((row, rowIdx) => (rowIdx === idx ? { ...row, reps: value } : row)));
+                              }}
+                            />
+                          </div>
+                          <div>
+                            <label>セット数</label>
+                            <input
+                              type="number"
+                              min="1"
+                              value={item.sets}
+                              onChange={(e) => {
+                                const value = Number(e.target.value);
+                                setNewTemplateItems((prev) => prev.map((row, rowIdx) => (rowIdx === idx ? { ...row, sets: value } : row)));
+                              }}
+                            />
+                          </div>
+                          <button type="button" className="btn-danger" onClick={() => removeSetTemplateRow(idx)} disabled={newTemplateItems.length === 1}>削除</button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-
-                  <button type="submit" disabled={loading || setItemsDraft.length === 0}>
-                    {loading ? <span className="spinner"></span> : '🚀'} セット内容を一括記録
-                  </button>
-                </form>
+                )}
               </>
             )}
           </>
@@ -706,18 +729,44 @@ export default function Home() {
         {tab === 'calendar' && (
           <div>
             <h3>📅 トレーニングカレンダー</h3>
-            <div className="element-container">
-              <h4>記録済みの日付</h4>
-              {markedDates.length === 0 ? (
-                <div className="small-muted">まだ記録がありません。</div>
-              ) : (
-                <ul>
-                  {markedDates.map((d) => (
-                    <li key={d}>{d}</li>
-                  ))}
-                </ul>
-              )}
-            </div>
+            <CalendarGrid
+              records={records}
+              currentMonth={currentMonth}
+              currentYear={currentYear}
+              onMonthChange={(month, year) => {
+                setCurrentMonth(month);
+                setCurrentYear(year);
+              }}
+              selectedDate={selectedDate}
+              onDateSelect={setSelectedDate}
+            />
+            
+            {selectedDate && (
+              <div className="element-container" style={{ marginTop: '2rem' }}>
+                <h4>📋 {selectedDate} のトレーニング内容</h4>
+                {records.filter((r) => r.date === selectedDate).length === 0 ? (
+                  <div className="small-muted">この日のトレーニング記録はありません。</div>
+                ) : (
+                  <div>
+                    {records
+                      .filter((r) => r.date === selectedDate)
+                      .map((r) => (
+                        <div key={r.id} className="record-item">
+                          <div className="record-item-title">{r.exercise}</div>
+                          <div className="record-item-meta">
+                            {r.weight}kg × {r.reps}回 × {r.sets}セット
+                          </div>
+                          {r.memo && (
+                            <div style={{ marginTop: '0.5rem', fontSize: '0.9rem' }}>
+                              {r.memo}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                  </div>
+                )}
+              </div>
+            )}
             <hr />
             <h4>画像登録</h4>
             <form onSubmit={uploadProgressImage} className="element-container">
@@ -955,3 +1004,157 @@ function ImageCompare() {
     </div>
   );
 }
+
+interface CalendarGridProps {
+  records: TrainingRecord[];
+  currentMonth: number;
+  currentYear: number;
+  onMonthChange: (month: number, year: number) => void;
+  selectedDate: string | null;
+  onDateSelect: (date: string) => void;
+}
+
+function CalendarGrid({
+  records,
+  currentMonth,
+  currentYear,
+  onMonthChange,
+  selectedDate,
+  onDateSelect,
+}: CalendarGridProps) {
+  const monthNames = [
+    '1月',
+    '2月',
+    '3月',
+    '4月',
+    '5月',
+    '6月',
+    '7月',
+    '8月',
+    '9月',
+    '10月',
+    '11月',
+    '12月',
+  ];
+  const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
+
+  const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+  const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
+
+  const recordDates = new Set(records.map((r) => r.date));
+
+  const handlePrevMonth = () => {
+    if (currentMonth === 0) {
+      onMonthChange(11, currentYear - 1);
+    } else {
+      onMonthChange(currentMonth - 1, currentYear);
+    }
+  };
+
+  const handleNextMonth = () => {
+    if (currentMonth === 11) {
+      onMonthChange(0, currentYear + 1);
+    } else {
+      onMonthChange(currentMonth + 1, currentYear);
+    }
+  };
+
+  const days = [];
+  for (let i = 0; i < firstDayOfMonth; i++) {
+    days.push(null);
+  }
+  for (let i = 1; i <= daysInMonth; i++) {
+    days.push(i);
+  }
+
+  return (
+    <div className="element-container">
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+        <button type="button" onClick={handlePrevMonth}>
+          ← 前月
+        </button>
+        <h4 style={{ margin: 0 }}>
+          {currentYear}年 {monthNames[currentMonth]}
+        </h4>
+        <button type="button" onClick={handleNextMonth}>
+          翌月 →
+        </button>
+      </div>
+
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(7, 1fr)',
+          gap: '0.5rem',
+          marginBottom: '1rem',
+        }}
+      >
+        {dayNames.map((day) => (
+          <div
+            key={day}
+            style={{
+              textAlign: 'center',
+              fontWeight: 'bold',
+              padding: '0.5rem',
+              backgroundColor: 'var(--border-color)',
+              borderRadius: '4px',
+            }}
+          >
+            {day}
+          </div>
+        ))}
+
+        {days.map((day, idx) => {
+          if (day === null) {
+            return (
+              <div
+                key={`empty-${idx}`}
+                style={{
+                  aspectRatio: '1',
+                  backgroundColor: 'transparent',
+                }}
+              />
+            );
+          }
+
+          const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+          const hasRecord = recordDates.has(dateStr);
+          const isSelected = selectedDate === dateStr;
+
+          return (
+            <button
+              key={day}
+              type="button"
+              onClick={() => onDateSelect(dateStr)}
+              style={{
+                aspectRatio: '1',
+                padding: '0.5rem',
+                borderRadius: '8px',
+                border: isSelected ? '2px solid var(--primary)' : '1px solid var(--border-color)',
+                backgroundColor: hasRecord ? 'var(--primary)20' : 'transparent',
+                color: isSelected ? 'var(--primary)' : 'var(--foreground)',
+                fontWeight: isSelected || hasRecord ? 'bold' : 'normal',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={(e) => {
+                if (!isSelected) {
+                  e.currentTarget.style.backgroundColor = hasRecord ? 'var(--primary)35' : 'var(--border-color)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isSelected) {
+                  e.currentTarget.style.backgroundColor = hasRecord ? 'var(--primary)20' : 'transparent';
+                }
+              }}
+            >
+              <div>{day}</div>
+              {hasRecord && <div style={{ fontSize: '0.7em', marginTop: '0.2rem' }}>●</div>}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
