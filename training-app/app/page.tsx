@@ -546,7 +546,7 @@ export default function Home() {
                     </div>
 
                     {setItemsDraft.map((item, idx) => (
-                      <div className="grid-cols-2" key={`draft-${idx}`} style={{ marginBottom: '1.5rem' }}>
+                      <div className="grid-cols-2" key={`draft-${idx}`} style={{ marginBottom: '1rem' }}>
                         <div>
                           <label>種目 {idx + 1}</label>
                           <input
