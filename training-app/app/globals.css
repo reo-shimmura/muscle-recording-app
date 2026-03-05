@@ -470,5 +470,14 @@ hr {
   .block-container {
     padding: 1rem 0.75rem;
   }
+
+  /* Calendar responsive styles */
+  [style*="grid-template-columns: repeat(7, 1fr)"] {
+    gap: 0.25rem !important;
+  }
+
+  [style*="aspectRatio: 1"] {
+    min-width: 0 !important;
+  }
 }
 

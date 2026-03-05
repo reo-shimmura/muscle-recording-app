@@ -546,8 +546,17 @@ export default function Home() {
                     </div>
 
                     {setItemsDraft.map((item, idx) => (
-                      <div className="grid-cols-2" key={`draft-${idx}`} style={{ marginBottom: '1.5rem' }}>
-                        <div>
+                      <div
+                        key={`draft-${idx}`}
+                        style={{
+                          marginBottom: '1.5rem',
+                          padding: '1rem',
+                          backgroundColor: 'var(--background-secondary)',
+                          border: '1px solid var(--border-color)',
+                          borderRadius: '8px',
+                        }}
+                      >
+                        <div style={{ marginBottom: '1rem' }}>
                           <label>種目 {idx + 1}</label>
                           <input
                             type="text"
@@ -559,9 +568,15 @@ export default function Home() {
                             required
                           />
                         </div>
-                        <div className="row" style={{ alignItems: 'end' }}>
+                        <div
+                          style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(3, 1fr)',
+                            gap: '1rem',
+                          }}
+                        >
                           <div>
-                            <label>重量</label>
+                            <label>重量 (kg)</label>
                             <input
                               type="number"
                               min="0"
@@ -587,7 +602,7 @@ export default function Home() {
                               required
                             />
                           </div>
-                          <div style={{ marginRight: '2rem' }}>
+                          <div>
                             <label>セット数</label>
                             <input
                               type="number"
@@ -1098,6 +1113,7 @@ function CalendarGrid({
               padding: '0.5rem',
               backgroundColor: 'var(--border-color)',
               borderRadius: '4px',
+              fontSize: 'clamp(0.7rem, 2vw, 0.9rem)',
             }}
           >
             {day}
@@ -1130,28 +1146,33 @@ function CalendarGrid({
                 aspectRatio: '1',
                 padding: '0.5rem',
                 borderRadius: '8px',
-                border: '2px solid transparent',
-                outline: isSelected ? '2px solid var(--primary)' : '1px solid var(--border-color)',
-                backgroundColor: hasRecord ? 'var(--primary)20' : 'transparent',
+                border: isSelected ? '2px solid var(--primary)' : '1px solid var(--border-color)',
+                backgroundColor: isSelected ? 'var(--primary)20' : hasRecord ? 'var(--primary)10' : 'transparent',
                 color: isSelected ? 'var(--primary)' : 'var(--foreground)',
                 fontWeight: isSelected || hasRecord ? 'bold' : 'normal',
                 cursor: 'pointer',
                 transition: 'all 0.2s ease',
                 boxSizing: 'border-box',
+                fontSize: 'clamp(0.7rem, 2vw, 0.9rem)',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.2rem',
               }}
               onMouseEnter={(e) => {
                 if (!isSelected) {
-                  e.currentTarget.style.backgroundColor = hasRecord ? 'var(--primary)35' : 'var(--border-color)';
+                  (e.currentTarget as HTMLButtonElement).style.backgroundColor = hasRecord ? 'var(--primary)20' : 'var(--border-color)';
                 }
               }}
               onMouseLeave={(e) => {
                 if (!isSelected) {
-                  e.currentTarget.style.backgroundColor = hasRecord ? 'var(--primary)20' : 'transparent';
+                  (e.currentTarget as HTMLButtonElement).style.backgroundColor = hasRecord ? 'var(--primary)10' : 'transparent';
                 }
               }}
             >
               <div>{day}</div>
-              {hasRecord && <div style={{ fontSize: '0.7em', marginTop: '0.2rem' }}>●</div>}
+              {hasRecord && <div style={{ fontSize: '0.6em' }}>●</div>}
             </button>
           );
         })}
