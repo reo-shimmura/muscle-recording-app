@@ -1144,21 +1144,23 @@ function CalendarGrid({
               onClick={() => onDateSelect(dateStr)}
               style={{
                 aspectRatio: '1',
-                padding: '0.5rem',
+                padding: '0.25rem',
                 borderRadius: '8px',
                 border: isSelected ? '2px solid var(--primary)' : '1px solid var(--border-color)',
                 backgroundColor: isSelected ? 'var(--primary)20' : hasRecord ? 'var(--primary)10' : 'transparent',
                 color: isSelected ? 'var(--primary)' : 'var(--foreground)',
                 fontWeight: isSelected || hasRecord ? 'bold' : 'normal',
                 cursor: 'pointer',
-                transition: 'all 0.2s ease',
+                transition: 'border 0.2s ease, background-color 0.2s ease',
                 boxSizing: 'border-box',
                 fontSize: 'clamp(0.7rem, 2vw, 0.9rem)',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '0.2rem',
+                gap: '0.1rem',
+                overflow: 'hidden',
+                position: 'relative',
               }}
               onMouseEnter={(e) => {
                 if (!isSelected) {
@@ -1171,8 +1173,8 @@ function CalendarGrid({
                 }
               }}
             >
-              <div>{day}</div>
-              {hasRecord && <div style={{ fontSize: '0.6em' }}>●</div>}
+              <div style={{ lineHeight: '1', height: '1em' }}>{day}</div>
+              {hasRecord && <div style={{ fontSize: '0.5em', lineHeight: '1', height: '0.5em', marginTop: '-0.1em' }}>●</div>}
             </button>
           );
         })}
