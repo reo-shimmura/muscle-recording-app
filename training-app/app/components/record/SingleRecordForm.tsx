@@ -1,20 +1,30 @@
 import { useState } from 'react';
 import ExerciseSelect from './ExerciseSelect';
 import WorkoutSetList from './WorkoutSetList';
-import type { TrainingRecord, AlertMessage } from '../../types';
+import type { CustomExercise, TrainingRecord, AlertMessage } from '../../types';
 
 interface Props {
   customExercises: string[];
+  customExercisesWithCategory: CustomExercise[];
   loading: boolean;
   onSave: (records: TrainingRecord[]) => Promise<boolean>;
+  onSaveExercise: (name: string, category: string) => Promise<void>;
   showMessage: (msg: AlertMessage) => void;
 }
 
 /** 単体登録フォーム：種目・日付・セット一覧・メモを入力して1種目分を登録 */
-export default function SingleRecordForm({ customExercises, loading, onSave, showMessage }: Props) {
+export default function SingleRecordForm({
+  customExercises,
+  customExercisesWithCategory,
+  loading,
+  onSave,
+  onSaveExercise,
+  showMessage,
+}: Props) {
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [exercise, setExercise] = useState('');
   const [exerciseNew, setExerciseNew] = useState('');
+  const [exerciseNewCategory, setExerciseNewCategory] = useState('');
   const [memo, setMemo] = useState('');
   const [sets, setSets] = useState<{ weight: number; reps: number }[]>([{ weight: 0, reps: 1 }]);
 
@@ -51,8 +61,14 @@ export default function SingleRecordForm({ customExercises, loading, onSave, sho
     const success = await onSave(payloads);
     if (!success) return;
 
+    // 新規種目かつカテゴリが指定されていれば保存
+    if (exerciseNew.trim() && exerciseNewCategory.trim()) {
+      await onSaveExercise(exerciseNew.trim(), exerciseNewCategory.trim());
+    }
+
     setExercise('');
     setExerciseNew('');
+    setExerciseNewCategory('');
     setMemo('');
     setSets([{ weight: 0, reps: 1 }]);
   };
@@ -62,9 +78,12 @@ export default function SingleRecordForm({ customExercises, loading, onSave, sho
       <ExerciseSelect
         value={exercise}
         newValue={exerciseNew}
+        newCategory={exerciseNewCategory}
         customExercises={customExercises}
+        customExercisesWithCategory={customExercisesWithCategory}
         onSelectChange={setExercise}
         onNewValueChange={setExerciseNew}
+        onNewCategoryChange={setExerciseNewCategory}
       />
 
       <div className="element-container">

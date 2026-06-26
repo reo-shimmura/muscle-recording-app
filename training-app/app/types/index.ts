@@ -36,6 +36,12 @@ export interface WorkoutSetTemplate {
   items: WorkoutSetItem[];
 }
 
+export interface CustomExercise {
+  id: number;
+  name: string;
+  category: string;
+}
+
 export type AlertType = 'error' | 'success' | 'info';
 
 export interface AlertMessage {

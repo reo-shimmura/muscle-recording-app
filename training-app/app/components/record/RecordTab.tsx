@@ -6,13 +6,15 @@ import SingleRecordForm from './SingleRecordForm';
 import ApplySetForm from './ApplySetForm';
 import CreateSetForm from './CreateSetForm';
 import { useSetTemplates } from '../../hooks/useSetTemplates';
-import type { TrainingRecord, AlertMessage } from '../../types';
+import type { CustomExercise, TrainingRecord, AlertMessage } from '../../types';
 
 interface Props {
   customExercises: string[];
+  customExercisesWithCategory: CustomExercise[];
   allExercisesFlat: string[];
   loading: boolean;
   onSave: (records: TrainingRecord[]) => Promise<boolean>;
+  onSaveExercise: (name: string, category: string) => Promise<void>;
   showMessage: (msg: AlertMessage) => void;
 }
 
@@ -27,7 +29,15 @@ const SET_MODE_TABS = [
 ];
 
 /** 記録追加タブ：単体登録とセット登録のモード切替を管理 */
-export default function RecordTab({ customExercises, allExercisesFlat, loading, onSave, showMessage }: Props) {
+export default function RecordTab({
+  customExercises,
+  customExercisesWithCategory,
+  allExercisesFlat,
+  loading,
+  onSave,
+  onSaveExercise,
+  showMessage,
+}: Props) {
   const [entryMode, setEntryMode] = useState<'single' | 'set'>('single');
   const [setTabMode, setSetTabMode] = useState<'apply' | 'create'>('apply');
 
@@ -67,8 +77,10 @@ export default function RecordTab({ customExercises, allExercisesFlat, loading, 
       {entryMode === 'single' && (
         <SingleRecordForm
           customExercises={customExercises}
+          customExercisesWithCategory={customExercisesWithCategory}
           loading={loading}
           onSave={onSave}
+          onSaveExercise={onSaveExercise}
           showMessage={showMessage}
         />
       )}

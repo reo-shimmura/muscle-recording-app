@@ -10,7 +10,7 @@ import CalendarTab from './components/calendar/CalendarTab';
 import DetailsTab from './components/details/DetailsTab';
 import { useTrainingData } from './hooks/useTrainingData';
 import { DEFAULT_EXERCISES, DEFAULT_EXERCISE_SET } from './constants/exercises';
-import type { Goal, TrainingRecord, ProgressImage, AlertMessage as AlertMessageType } from './types';
+import type { CustomExercise, Goal, TrainingRecord, ProgressImage, AlertMessage as AlertMessageType } from './types';
 
 const MAIN_TABS = [
   { id: 'write', label: '📝 記録追加' },
@@ -24,6 +24,7 @@ export default function Home() {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [message, setMessage] = useState<AlertMessageType | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
+  const [customExercisesWithCategory, setCustomExercisesWithCategory] = useState<CustomExercise[]>([]);
 
   const showMessage = useCallback((msg: AlertMessageType) => {
     setMessage(msg);
@@ -32,17 +33,40 @@ export default function Home() {
 
   const { records, images, loading, setRecords, setImages, fetchData } = useTrainingData(showMessage);
 
+  const fetchExercises = useCallback(async () => {
+    try {
+      const res = await fetch('/api/exercises');
+      if (!res.ok) throw new Error(`Fetch exercises failed: ${res.status}`);
+      const data: CustomExercise[] = await res.json();
+      setCustomExercisesWithCategory(data);
+    } catch (err) {
+      console.error('exercises fetch error:', err);
+    }
+  }, []);
+
   useEffect(() => {
     fetchData();
+    fetchExercises();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // デフォルト種目にない記録済み種目（カスタム）
+  // exercisesテーブルに登録済みの種目名セット
+  const exerciseNamesWithCategory = new Set(customExercisesWithCategory.map((e) => e.name));
+
+  // デフォルト種目にもexercisesテーブルにもない記録済み種目（レガシーカスタム）
   const customExercises = Array.from(
-    new Set(records.map((r) => r.exercise).filter((ex) => ex && !DEFAULT_EXERCISE_SET.has(ex)))
+    new Set(
+      records
+        .map((r) => r.exercise)
+        .filter((ex) => ex && !DEFAULT_EXERCISE_SET.has(ex) && !exerciseNamesWithCategory.has(ex))
+    )
   ).sort();
 
-  const allExercisesFlat = [...Object.values(DEFAULT_EXERCISES).flat(), ...customExercises];
+  const allExercisesFlat = [
+    ...Object.values(DEFAULT_EXERCISES).flat(),
+    ...customExercisesWithCategory.map((e) => e.name),
+    ...customExercises,
+  ];
 
   const handleSaveRecords = async (payloads: TrainingRecord[]): Promise<boolean> => {
     try {
@@ -61,6 +85,20 @@ export default function Home() {
       console.error('Save failed:', err instanceof Error ? err.message : err);
       showMessage({ type: 'error', text: '記録の保存に失敗しました。' });
       return false;
+    }
+  };
+
+  const handleSaveExercise = async (name: string, category: string): Promise<void> => {
+    try {
+      const res = await fetch('/api/exercises', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, category }),
+      });
+      if (!res.ok) throw new Error(`Save exercise failed: ${res.status}`);
+      await fetchExercises();
+    } catch (err: unknown) {
+      console.error('Save exercise failed:', err instanceof Error ? err.message : err);
     }
   };
 
@@ -93,9 +131,11 @@ export default function Home() {
         {tab === 'write' && (
           <RecordTab
             customExercises={customExercises}
+            customExercisesWithCategory={customExercisesWithCategory}
             allExercisesFlat={allExercisesFlat}
             loading={loading}
             onSave={handleSaveRecords}
+            onSaveExercise={handleSaveExercise}
             showMessage={showMessage}
           />
         )}
