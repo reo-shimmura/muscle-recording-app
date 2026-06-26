@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
 
 interface TrainingRecord {
   id?: number;
@@ -23,8 +22,9 @@ interface Goal {
 interface ProgressImage {
   id?: number;
   date: string;
-  image_url: string;
-  note?: string;
+  image_path: string;
+  record_id?: number | null;
+  created_at?: string;
 }
 
 interface WorkoutSetItem {
@@ -66,7 +66,16 @@ export default function Home() {
   });
 
   const [entryMode, setEntryMode] = useState<'single' | 'set'>('single');
-  const [setTemplates, setSetTemplates] = useState<WorkoutSetTemplate[]>([]);
+  const [setTemplates, setSetTemplates] = useState<WorkoutSetTemplate[]>(() => {
+    if (typeof window === 'undefined') return [];
+    try {
+      const raw = localStorage.getItem('workout-set-templates');
+      const parsed = raw ? (JSON.parse(raw) as WorkoutSetTemplate[]) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  });
   const [selectedTemplateId, setSelectedTemplateId] = useState('');
   const [setDate, setSetDate] = useState(new Date().toISOString().slice(0, 10));
   const [setMemo, setSetMemo] = useState('');
@@ -80,27 +89,6 @@ export default function Home() {
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  useEffect(() => {
-    const raw = localStorage.getItem('workout-set-templates');
-    if (!raw) return;
-    try {
-      const parsed = JSON.parse(raw) as WorkoutSetTemplate[];
-      if (Array.isArray(parsed)) {
-        setSetTemplates(parsed);
-      }
-    } catch {
-      // ignore invalid local data
-    }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem('workout-set-templates', JSON.stringify(setTemplates));
-  }, [setTemplates]);
-
   const showMessage = (type: 'error' | 'success' | 'info', text: string) => {
     setMessage({ type, text });
     setTimeout(() => setMessage(null), 4000);
@@ -109,48 +97,37 @@ export default function Home() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const { data: recs, error } = await supabase
-        .from('records')
-        .select('*')
-        .order('id', { ascending: false });
-      
-      if (error) {
-        console.error('Supabase Error:', {
-          message: error.message,
-          code: error.code,
-          details: error.details,
-        });
-        throw error;
-      }
+      const [recRes, imgRes] = await Promise.all([
+        fetch('/api/records'),
+        fetch('/api/images'),
+      ]);
 
-      const { data: imageRows, error: imageError } = await supabase
-        .from('progress_images')
-        .select('*')
-        .order('date', { ascending: false });
+      if (!recRes.ok) throw new Error(`records: ${recRes.status}`);
+      if (!imgRes.ok) throw new Error(`images: ${imgRes.status}`);
 
-      if (!imageError) {
-        setImages(imageRows || []);
-      }
-      
-      setRecords(recs || []);
-    } catch (e: any) {
-      const errorMsg = e?.message || '不明なエラーが発生しました。';
-      console.error('データ読込エラー:', errorMsg);
-      
-      let displayMsg = 'データの読込に失敗しました。';
-      if (errorMsg.includes('401') || errorMsg.includes('Unauthorized')) {
-        displayMsg = '❌ 認証エラー。.env.local に Supabase キーが正しく設定されているか確認してください。';
-      } else if (errorMsg.includes('404') || errorMsg.includes('not found')) {
-        displayMsg = '❌ テーブル「records」が見つかりません。Supabase で作成してください。';
-      } else if (errorMsg.includes('network')) {
-        displayMsg = '❌ ネットワークエラー。インターネット接続を確認してください。';
-      }
-      
-      showMessage('error', displayMsg);
+      const recs: TrainingRecord[] = await recRes.json();
+      const imageRows: ProgressImage[] = await imgRes.json();
+
+      setRecords(recs);
+      setImages(imageRows);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : '不明なエラーが発生しました。';
+      console.error('データ読込エラー:', msg);
+      showMessage('error', 'データの読込に失敗しました。');
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('workout-set-templates', JSON.stringify(setTemplates));
+  }, [setTemplates]);
 
   const addRecord = async (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -159,7 +136,7 @@ export default function Home() {
       showMessage('error', '種目を入力してください。');
       return;
     }
-    const payload: Omit<TrainingRecord, 'id'> = {
+    const payload = {
       date: form.date,
       exercise: resolvedExercise,
       weight: Math.max(0, Number(form.weight)),
@@ -169,20 +146,20 @@ export default function Home() {
     };
     try {
       setLoading(true);
-      const { data, error } = await supabase.from('records').insert([payload]).select();
-      
-      if (error) {
-        console.error('Insert Error:', error);
-        throw error;
-      }
-      
-      setRecords((s) => (data ? [...data, ...s] : s));
+      const res = await fetch('/api/records', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error(`Save failed: ${res.status}`);
+      const data: TrainingRecord = await res.json();
+      setRecords((s) => [data, ...s]);
       setForm({ date: new Date().toISOString().slice(0, 10), exercise: '', weight: 0, reps: 1, sets: 3, memo: '' });
       setNewExercise('');
       showMessage('success', '✅ 記録を保存しました！');
       setTab('details');
-    } catch (err: any) {
-      console.error('Save failed:', err?.message);
+    } catch (err: unknown) {
+      console.error('Save failed:', err instanceof Error ? err.message : err);
       showMessage('error', '記録の保存に失敗しました。');
     } finally {
       setLoading(false);
@@ -198,50 +175,25 @@ export default function Home() {
 
     try {
       setUploadingImage(true);
-      const safeName = imageFile.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-      const path = `${imageForm.date}/${Date.now()}-${safeName}`;
+      const formData = new FormData();
+      formData.append('file', imageFile);
+      formData.append('date', imageForm.date);
+      formData.append('note', imageForm.note.trim());
 
-      const { error: uploadError } = await supabase.storage
-        .from('training-images')
-        .upload(path, imageFile, { upsert: false });
-
-      if (uploadError) {
-        throw uploadError;
-      }
-
-      const { data: publicUrlData } = supabase.storage
-        .from('training-images')
-        .getPublicUrl(path);
-
-      const { data: savedRow, error: saveError } = await supabase
-        .from('progress_images')
-        .insert([
-          {
-            date: imageForm.date,
-            image_url: publicUrlData.publicUrl,
-            note: imageForm.note.trim(),
-          },
-        ])
-        .select()
-        .single();
-
-      if (saveError) {
-        throw saveError;
-      }
+      const res = await fetch('/api/images', {
+        method: 'POST',
+        body: formData,
+      });
+      if (!res.ok) throw new Error(`Upload failed: ${res.status}`);
+      const savedRow: ProgressImage = await res.json();
 
       setImages((prev) => [savedRow, ...prev]);
       setImageFile(null);
       setImageForm({ date: new Date().toISOString().slice(0, 10), note: '' });
       showMessage('success', '📷 画像を登録しました。');
-    } catch (err: any) {
-      const errorMsg = err?.message || '';
-      if (errorMsg.toLowerCase().includes('bucket')) {
-        showMessage('error', '画像バケット `training-images` が見つかりません。Supabase Storage で作成してください。');
-      } else if (errorMsg.toLowerCase().includes('progress_images')) {
-        showMessage('error', 'テーブル `progress_images` が見つかりません。Supabase に作成してください。');
-      } else {
-        showMessage('error', '画像登録に失敗しました。');
-      }
+    } catch (err: unknown) {
+      console.error('Upload failed:', err instanceof Error ? err.message : err);
+      showMessage('error', '画像登録に失敗しました。');
     } finally {
       setUploadingImage(false);
     }
@@ -250,18 +202,13 @@ export default function Home() {
   const deleteRecord = async (id: number) => {
     try {
       setLoading(true);
-      const { error } = await supabase.from('records').delete().match({ id });
-      
-      if (error) {
-        console.error('Delete Error:', error);
-        throw error;
-      }
-      
+      const res = await fetch(`/api/records/${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error(`Delete failed: ${res.status}`);
       setRecords((s) => s.filter((r) => r.id !== id));
       setDeleteConfirm(null);
       showMessage('success', '記録を削除しました。');
-    } catch (err: any) {
-      console.error('Delete failed:', err?.message);
+    } catch (err: unknown) {
+      console.error('Delete failed:', err instanceof Error ? err.message : err);
       showMessage('error', '削除に失敗しました。');
     } finally {
       setLoading(false);
@@ -335,7 +282,7 @@ export default function Home() {
       return;
     }
 
-    const payloads: Omit<TrainingRecord, 'id'>[] = setItemsDraft.map((item) => ({
+    const payloads = setItemsDraft.map((item) => ({
       date: setDate,
       exercise: item.exercise.trim(),
       weight: Math.max(0, Number(item.weight)),
@@ -351,16 +298,19 @@ export default function Home() {
 
     try {
       setLoading(true);
-      const { data, error } = await supabase.from('records').insert(payloads).select();
-      if (error) {
-        throw error;
-      }
-      setRecords((prev) => (data ? [...data, ...prev] : prev));
+      const res = await fetch('/api/records', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payloads),
+      });
+      if (!res.ok) throw new Error(`Set insert failed: ${res.status}`);
+      const data: TrainingRecord[] = await res.json();
+      setRecords((prev) => [...data, ...prev]);
       setSetMemo('');
       showMessage('success', `✅ ${payloads.length}種目を一括記録しました！`);
       setTab('details');
-    } catch (err: any) {
-      console.error('Set insert failed:', err?.message);
+    } catch (err: unknown) {
+      console.error('Set insert failed:', err instanceof Error ? err.message : err);
       showMessage('error', 'セット記録の保存に失敗しました。');
     } finally {
       setLoading(false);
@@ -369,7 +319,6 @@ export default function Home() {
 
   const uniqueExercises = Array.from(new Set(records.map((r) => r.exercise).filter(Boolean))).sort();
   const addGoal = (g: Goal) => setGoals((s) => [...s, { ...g, id: Date.now() }]);
-  const markedDates = Array.from(new Set(records.map((r) => r.date))).filter(Boolean).sort().reverse();
 
   return (
     <div>
@@ -755,7 +704,7 @@ export default function Home() {
               selectedDate={selectedDate}
               onDateSelect={setSelectedDate}
             />
-            
+
             {selectedDate && (
               <div className="element-container" style={{ marginTop: '2rem' }}>
                 <h4>📋 {selectedDate} のトレーニング内容</h4>
@@ -823,12 +772,11 @@ export default function Home() {
                 <h4>登録済み画像</h4>
                 <div className="grid-cols-2">
                   {images.map((img) => (
-                    <div key={img.id ?? `${img.date}-${img.image_url}`} className="record-item">
+                    <div key={img.id ?? `${img.date}-${img.image_path}`} className="record-item">
                       <div className="record-item-meta" style={{ marginBottom: '0.5rem' }}>{img.date}</div>
                       <div className="image-container">
-                        <img src={img.image_url} alt={`記録画像-${img.date}`} />
+                        <img src={img.image_path} alt={`記録画像-${img.date}`} />
                       </div>
-                      {img.note && <div className="small-muted" style={{ marginTop: '0.5rem' }}>{img.note}</div>}
                     </div>
                   ))}
                 </div>
@@ -1038,18 +986,8 @@ function CalendarGrid({
   onDateSelect,
 }: CalendarGridProps) {
   const monthNames = [
-    '1月',
-    '2月',
-    '3月',
-    '4月',
-    '5月',
-    '6月',
-    '7月',
-    '8月',
-    '9月',
-    '10月',
-    '11月',
-    '12月',
+    '1月', '2月', '3月', '4月', '5月', '6月',
+    '7月', '8月', '9月', '10月', '11月', '12月',
   ];
   const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
 
@@ -1074,7 +1012,7 @@ function CalendarGrid({
     }
   };
 
-  const days = [];
+  const days: (number | null)[] = [];
   for (let i = 0; i < firstDayOfMonth; i++) {
     days.push(null);
   }
@@ -1182,4 +1120,3 @@ function CalendarGrid({
     </div>
   );
 }
-
