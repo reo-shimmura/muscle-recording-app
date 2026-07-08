@@ -1,4 +1,4 @@
-import { getDb } from '../db';
+import { getDb, ensureSchema } from '../db';
 
 export interface TrainingRecord {
   id?: number;
@@ -14,52 +14,71 @@ export interface TrainingRecord {
 type RecordInput = Omit<TrainingRecord, 'id' | 'created_at'>;
 
 export const recordsRepository = {
-  findAll(): TrainingRecord[] {
+  async findAll(): Promise<TrainingRecord[]> {
+    await ensureSchema();
     const db = getDb();
-    return db.prepare('SELECT * FROM records ORDER BY id DESC').all() as TrainingRecord[];
+    const result = await db.execute('SELECT * FROM records ORDER BY id DESC');
+    return result.rows as unknown as TrainingRecord[];
   },
 
-  findById(id: number): TrainingRecord | null {
+  async findById(id: number): Promise<TrainingRecord | null> {
+    await ensureSchema();
     const db = getDb();
-    return (db.prepare('SELECT * FROM records WHERE id = ?').get(id) as TrainingRecord) ?? null;
+    const result = await db.execute({ sql: 'SELECT * FROM records WHERE id = ?', args: [id] });
+    return (result.rows[0] as unknown as TrainingRecord) ?? null;
   },
 
-  create(input: RecordInput): TrainingRecord {
+  async create(input: RecordInput): Promise<TrainingRecord> {
+    await ensureSchema();
     const db = getDb();
-    const result = db
-      .prepare('INSERT INTO records (date, exercise, weight, reps, sets, memo) VALUES (?, ?, ?, ?, ?, ?)')
-      .run(input.date, input.exercise, input.weight, input.reps, input.sets, input.memo);
-    return db.prepare('SELECT * FROM records WHERE id = ?').get(result.lastInsertRowid) as TrainingRecord;
-  },
-
-  createMany(inputs: RecordInput[]): TrainingRecord[] {
-    const db = getDb();
-    const stmt = db.prepare(
-      'INSERT INTO records (date, exercise, weight, reps, sets, memo) VALUES (?, ?, ?, ?, ?, ?)'
-    );
-    const insertAll = db.transaction((rows: RecordInput[]) => {
-      return rows.map((r) => {
-        const result = stmt.run(r.date, r.exercise, r.weight, r.reps, r.sets, r.memo);
-        return db.prepare('SELECT * FROM records WHERE id = ?').get(result.lastInsertRowid) as TrainingRecord;
-      });
+    const result = await db.execute({
+      sql: 'INSERT INTO records (date, exercise, weight, reps, sets, memo) VALUES (?, ?, ?, ?, ?, ?)',
+      args: [input.date, input.exercise, input.weight, input.reps, input.sets, input.memo],
     });
-    return insertAll(inputs);
+    const row = await db.execute({
+      sql: 'SELECT * FROM records WHERE id = ?',
+      args: [Number(result.lastInsertRowid)],
+    });
+    return row.rows[0] as unknown as TrainingRecord;
   },
 
-  update(id: number, input: Partial<RecordInput>): TrainingRecord | null {
+  async createMany(inputs: RecordInput[]): Promise<TrainingRecord[]> {
+    await ensureSchema();
     const db = getDb();
-    const existing = db.prepare('SELECT * FROM records WHERE id = ?').get(id) as TrainingRecord | undefined;
+    const created: TrainingRecord[] = [];
+    for (const r of inputs) {
+      const result = await db.execute({
+        sql: 'INSERT INTO records (date, exercise, weight, reps, sets, memo) VALUES (?, ?, ?, ?, ?, ?)',
+        args: [r.date, r.exercise, r.weight, r.reps, r.sets, r.memo],
+      });
+      const row = await db.execute({
+        sql: 'SELECT * FROM records WHERE id = ?',
+        args: [Number(result.lastInsertRowid)],
+      });
+      created.push(row.rows[0] as unknown as TrainingRecord);
+    }
+    return created;
+  },
+
+  async update(id: number, input: Partial<RecordInput>): Promise<TrainingRecord | null> {
+    await ensureSchema();
+    const db = getDb();
+    const existingResult = await db.execute({ sql: 'SELECT * FROM records WHERE id = ?', args: [id] });
+    const existing = existingResult.rows[0] as unknown as TrainingRecord | undefined;
     if (!existing) return null;
     const merged = { ...existing, ...input };
-    db.prepare(
-      'UPDATE records SET date=?, exercise=?, weight=?, reps=?, sets=?, memo=? WHERE id=?'
-    ).run(merged.date, merged.exercise, merged.weight, merged.reps, merged.sets, merged.memo, id);
-    return db.prepare('SELECT * FROM records WHERE id = ?').get(id) as TrainingRecord;
+    await db.execute({
+      sql: 'UPDATE records SET date=?, exercise=?, weight=?, reps=?, sets=?, memo=? WHERE id=?',
+      args: [merged.date, merged.exercise, merged.weight, merged.reps, merged.sets, merged.memo, id],
+    });
+    const row = await db.execute({ sql: 'SELECT * FROM records WHERE id = ?', args: [id] });
+    return row.rows[0] as unknown as TrainingRecord;
   },
 
-  delete(id: number): boolean {
+  async delete(id: number): Promise<boolean> {
+    await ensureSchema();
     const db = getDb();
-    const result = db.prepare('DELETE FROM records WHERE id = ?').run(id);
-    return result.changes > 0;
+    const result = await db.execute({ sql: 'DELETE FROM records WHERE id = ?', args: [id] });
+    return result.rowsAffected > 0;
   },
 };

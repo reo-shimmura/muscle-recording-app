@@ -3,7 +3,7 @@ import { recordsRepository } from '@/lib/repository/records';
 
 export async function GET() {
   try {
-    const records = recordsRepository.findAll();
+    const records = await recordsRepository.findAll();
     return NextResponse.json(records);
   } catch (error) {
     console.error('GET /api/records:', error);
@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     const body: unknown = await request.json();
 
     if (Array.isArray(body)) {
-      const records = recordsRepository.createMany(
+      const records = await recordsRepository.createMany(
         body.map((item) => ({
           date: String(item.date),
           exercise: String(item.exercise),
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'date と exercise は必須です。' }, { status: 400 });
     }
 
-    const record = recordsRepository.create({
+    const record = await recordsRepository.create({
       date: String(item.date),
       exercise: String(item.exercise),
       weight: Number(item.weight) || 0,

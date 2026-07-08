@@ -3,7 +3,7 @@ import { exercisesRepository } from '../../../lib/repository/exercises';
 
 export async function GET() {
   try {
-    const exercises = exercisesRepository.findAll();
+    const exercises = await exercisesRepository.findAll();
     return NextResponse.json(exercises);
   } catch (err) {
     console.error('GET /api/exercises error:', err);
@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     if (!name?.trim() || !category?.trim()) {
       return NextResponse.json({ error: 'name と category は必須です' }, { status: 400 });
     }
-    const exercise = exercisesRepository.upsert(name.trim(), category.trim());
+    const exercise = await exercisesRepository.upsert(name.trim(), category.trim());
     return NextResponse.json(exercise, { status: 201 });
   } catch (err) {
     console.error('POST /api/exercises error:', err);

@@ -12,7 +12,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
     }
 
     const body = (await request.json()) as Record<string, unknown>;
-    const updated = recordsRepository.update(numId, {
+    const updated = await recordsRepository.update(numId, {
       date: body.date !== undefined ? String(body.date) : undefined,
       exercise: body.exercise !== undefined ? String(body.exercise) : undefined,
       weight: body.weight !== undefined ? Number(body.weight) : undefined,
@@ -39,7 +39,7 @@ export async function DELETE(_request: NextRequest, { params }: Params) {
       return NextResponse.json({ error: '無効なIDです。' }, { status: 400 });
     }
 
-    const deleted = recordsRepository.delete(numId);
+    const deleted = await recordsRepository.delete(numId);
     if (!deleted) {
       return NextResponse.json({ error: '記録が見つかりません。' }, { status: 404 });
     }
