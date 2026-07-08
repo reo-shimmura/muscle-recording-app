@@ -14,3 +14,6 @@ venv/
 
 # Streamlitの一時ファイル
 .streamlit/
+
+# Claude Codeのローカル設定・スキル
+.claude/
