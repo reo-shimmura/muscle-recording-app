@@ -5,6 +5,7 @@ export interface TrainingRecord {
   weight: number;
   reps: number;
   sets: number;
+  duration_minutes?: number | null;
   memo: string;
 }
 

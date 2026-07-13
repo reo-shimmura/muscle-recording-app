@@ -23,6 +23,7 @@ export async function POST(request: NextRequest) {
           weight: Number(item.weight) || 0,
           reps: Number(item.reps) || 1,
           sets: Number(item.sets) || 1,
+          duration_minutes: item.duration_minutes != null ? Number(item.duration_minutes) : null,
           memo: String(item.memo ?? ''),
         }))
       );
@@ -40,6 +41,7 @@ export async function POST(request: NextRequest) {
       weight: Number(item.weight) || 0,
       reps: Number(item.reps) || 1,
       sets: Number(item.sets) || 1,
+      duration_minutes: item.duration_minutes != null ? Number(item.duration_minutes) : null,
       memo: String(item.memo ?? ''),
     });
     return NextResponse.json(record, { status: 201 });

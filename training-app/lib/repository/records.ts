@@ -7,6 +7,7 @@ export interface TrainingRecord {
   weight: number;
   reps: number;
   sets: number;
+  duration_minutes?: number | null;
   memo: string;
   created_at?: string;
 }
@@ -32,8 +33,8 @@ export const recordsRepository = {
     await ensureSchema();
     const db = getDb();
     const result = await db.execute({
-      sql: 'INSERT INTO records (date, exercise, weight, reps, sets, memo) VALUES (?, ?, ?, ?, ?, ?)',
-      args: [input.date, input.exercise, input.weight, input.reps, input.sets, input.memo],
+      sql: 'INSERT INTO records (date, exercise, weight, reps, sets, duration_minutes, memo) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      args: [input.date, input.exercise, input.weight, input.reps, input.sets, input.duration_minutes ?? null, input.memo],
     });
     const row = await db.execute({
       sql: 'SELECT * FROM records WHERE id = ?',
@@ -48,8 +49,8 @@ export const recordsRepository = {
     const created: TrainingRecord[] = [];
     for (const r of inputs) {
       const result = await db.execute({
-        sql: 'INSERT INTO records (date, exercise, weight, reps, sets, memo) VALUES (?, ?, ?, ?, ?, ?)',
-        args: [r.date, r.exercise, r.weight, r.reps, r.sets, r.memo],
+        sql: 'INSERT INTO records (date, exercise, weight, reps, sets, duration_minutes, memo) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        args: [r.date, r.exercise, r.weight, r.reps, r.sets, r.duration_minutes ?? null, r.memo],
       });
       const row = await db.execute({
         sql: 'SELECT * FROM records WHERE id = ?',
@@ -68,8 +69,8 @@ export const recordsRepository = {
     if (!existing) return null;
     const merged = { ...existing, ...input };
     await db.execute({
-      sql: 'UPDATE records SET date=?, exercise=?, weight=?, reps=?, sets=?, memo=? WHERE id=?',
-      args: [merged.date, merged.exercise, merged.weight, merged.reps, merged.sets, merged.memo, id],
+      sql: 'UPDATE records SET date=?, exercise=?, weight=?, reps=?, sets=?, duration_minutes=?, memo=? WHERE id=?',
+      args: [merged.date, merged.exercise, merged.weight, merged.reps, merged.sets, merged.duration_minutes ?? null, merged.memo, id],
     });
     const row = await db.execute({ sql: 'SELECT * FROM records WHERE id = ?', args: [id] });
     return row.rows[0] as unknown as TrainingRecord;

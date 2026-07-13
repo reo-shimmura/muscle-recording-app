@@ -49,7 +49,11 @@ export default function CalendarTab({ records, images, onImageUpload, showMessag
                 <Card key={r.id} className="mb-3 border-l-4 border-l-primary">
                   <CardContent>
                     <div className="record-item-title">{r.exercise}</div>
-                    <div className="record-item-meta">{r.weight}kg × {r.reps}回 × {r.sets}セット</div>
+                    <div className="record-item-meta">
+                      {r.duration_minutes != null
+                        ? `${r.duration_minutes}分`
+                        : `${r.weight}kg × ${r.reps}回 × ${r.sets}セット`}
+                    </div>
                     {r.memo && <div style={{ marginTop: '0.5rem', fontSize: '0.9rem' }}>{r.memo}</div>}
                   </CardContent>
                 </Card>

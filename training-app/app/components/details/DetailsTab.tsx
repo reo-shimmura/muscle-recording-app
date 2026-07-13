@@ -4,7 +4,7 @@ import { useCallback, useMemo, useState } from 'react';
 import RecordCard from './RecordCard';
 import DetailsFilters from './DetailsFilters';
 import StatsChart from './StatsChart';
-import { buildExerciseCategoryMap, UNCATEGORIZED_LABEL } from '../../constants/exercises';
+import { buildExerciseCategoryMap, CARDIO_CATEGORY, UNCATEGORIZED_LABEL } from '../../constants/exercises';
 import { aggregateDailyStats } from '../../lib/detailsStats';
 import type { TrainingRecord, CustomExercise } from '../../types';
 
@@ -51,6 +51,9 @@ export default function DetailsTab({ records, customExercisesWithCategory, onDel
 
   const dailyStats = useMemo(() => aggregateDailyStats(filteredRecords), [filteredRecords]);
 
+  // カテゴリで「有酸素」を選んでいるか、有酸素種目を個別に選んでいる場合は時間ベースのグラフに切り替える
+  const isCardio = category === CARDIO_CATEGORY || (exercise !== '' && categoryOf(exercise) === CARDIO_CATEGORY);
+
   // カテゴリを変更したら、別カテゴリの種目が選択されたままにならないようリセットする
   const handleCategoryChange = (value: string) => {
     setCategory(value);
@@ -80,7 +83,7 @@ export default function DetailsTab({ records, customExercisesWithCategory, onDel
             <div className="alert alert-info">該当する記録がありません。</div>
           ) : (
             <>
-              <StatsChart data={dailyStats} />
+              <StatsChart key={isCardio ? 'cardio' : 'strength'} data={dailyStats} isCardio={isCardio} />
 
               <p className="small-muted">{filteredRecords.length} 件の記録</p>
               {filteredRecords.map((r) => (

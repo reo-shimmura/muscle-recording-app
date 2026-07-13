@@ -2,6 +2,9 @@ import type { CustomExercise } from '../types';
 
 export const UNCATEGORIZED_LABEL = 'その他';
 
+// このカテゴリの種目は重量×回数×セットではなく、時間（分）で記録する
+export const CARDIO_CATEGORY = '有酸素';
+
 export const DEFAULT_EXERCISES: Record<string, string[]> = {
   胸: ['ベンチプレス', 'チェストプレス'],
   背中: ['ラットプルダウン', 'シーテッドロー', 'フェイスプル', 'デッドリフト'],

@@ -15,7 +15,9 @@ export default function RecordCard({ record, onDeleteRequest }: Props) {
         <div className="flex-1">
           <div className="record-item-title">{record.exercise}</div>
           <div className="record-item-meta">
-            {record.date} • {record.weight}kg × {record.reps}回 × {record.sets}セット
+            {record.date} • {record.duration_minutes != null
+              ? `${record.duration_minutes}分`
+              : `${record.weight}kg × ${record.reps}回 × ${record.sets}セット`}
           </div>
           {record.memo && (
             <div style={{ marginTop: '0.5rem', fontSize: '0.9rem' }}>{record.memo}</div>

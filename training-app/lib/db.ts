@@ -49,4 +49,14 @@ async function initSchema(db: Client): Promise<void> {
     ],
     'write'
   );
+  await migrateAddDurationMinutes(db);
+}
+
+// 既存のrecordsテーブルに duration_minutes 列がなければ追加する（有酸素種目を分単位で記録するため）
+async function migrateAddDurationMinutes(db: Client): Promise<void> {
+  const columns = await db.execute('PRAGMA table_info(records)');
+  const hasDurationColumn = columns.rows.some((row) => row.name === 'duration_minutes');
+  if (!hasDurationColumn) {
+    await db.execute('ALTER TABLE records ADD COLUMN duration_minutes REAL');
+  }
 }

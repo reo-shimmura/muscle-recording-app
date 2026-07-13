@@ -18,6 +18,9 @@ export async function PUT(request: NextRequest, { params }: Params) {
       weight: body.weight !== undefined ? Number(body.weight) : undefined,
       reps: body.reps !== undefined ? Number(body.reps) : undefined,
       sets: body.sets !== undefined ? Number(body.sets) : undefined,
+      duration_minutes: body.duration_minutes !== undefined
+        ? (body.duration_minutes != null ? Number(body.duration_minutes) : null)
+        : undefined,
       memo: body.memo !== undefined ? String(body.memo) : undefined,
     });
 
