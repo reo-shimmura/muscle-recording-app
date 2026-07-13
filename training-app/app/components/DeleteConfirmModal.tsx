@@ -1,9 +1,12 @@
+import { Button } from '@/components/ui/button';
+
 interface Props {
   loading: boolean;
   onConfirm: () => void;
   onCancel: () => void;
 }
 
+/** 削除確認モーダル */
 export default function DeleteConfirmModal({ loading, onConfirm, onCancel }: Props) {
   return (
     <div className="modal-overlay" onClick={onCancel}>
@@ -11,22 +14,12 @@ export default function DeleteConfirmModal({ loading, onConfirm, onCancel }: Pro
         <h3>本当に削除しますか？</h3>
         <p className="small-muted">この操作は元に戻せません。</p>
         <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1.5rem' }}>
-          <button
-            onClick={onCancel}
-            style={{
-              background: 'var(--border-color)',
-              color: 'var(--foreground)',
-              border: 'none',
-              padding: '0.6rem 1.2rem',
-              borderRadius: '8px',
-              cursor: 'pointer',
-            }}
-          >
+          <Button variant="outline" onClick={onCancel}>
             キャンセル
-          </button>
-          <button className="btn-danger" onClick={onConfirm} disabled={loading}>
+          </Button>
+          <Button variant="destructive" onClick={onConfirm} disabled={loading}>
             削除
-          </button>
+          </Button>
         </div>
       </div>
     </div>

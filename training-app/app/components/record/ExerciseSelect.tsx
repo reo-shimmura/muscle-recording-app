@@ -1,4 +1,13 @@
 import { DEFAULT_EXERCISES } from '../../constants/exercises';
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import type { CustomExercise } from '../../types';
 
 interface Props {
@@ -48,23 +57,29 @@ export default function ExerciseSelect({
   return (
     <div className="element-container">
       <label>種目</label>
-      <select value={value} onChange={(e) => onSelectChange(e.target.value)}>
-        <option value="">-- 種目を選択 --</option>
-        {Object.entries(mergedByCategory).map(([category, exercises]) => (
-          <optgroup key={category} label={category}>
-            {exercises.map((ex) => (
-              <option key={ex} value={ex}>{ex}</option>
-            ))}
-          </optgroup>
-        ))}
-        {customExercises.length > 0 && (
-          <optgroup label="カスタム">
-            {customExercises.map((ex) => (
-              <option key={ex} value={ex}>{ex}</option>
-            ))}
-          </optgroup>
-        )}
-      </select>
+      <Select value={value} onValueChange={(v) => onSelectChange(v ?? '')}>
+        <SelectTrigger className="w-full">
+          <SelectValue placeholder="-- 種目を選択 --" />
+        </SelectTrigger>
+        <SelectContent>
+          {Object.entries(mergedByCategory).map(([category, exercises]) => (
+            <SelectGroup key={category}>
+              <SelectLabel>{category}</SelectLabel>
+              {exercises.map((ex) => (
+                <SelectItem key={ex} value={ex}>{ex}</SelectItem>
+              ))}
+            </SelectGroup>
+          ))}
+          {customExercises.length > 0 && (
+            <SelectGroup>
+              <SelectLabel>カスタム</SelectLabel>
+              {customExercises.map((ex) => (
+                <SelectItem key={ex} value={ex}>{ex}</SelectItem>
+              ))}
+            </SelectGroup>
+          )}
+        </SelectContent>
+      </Select>
 
       <input
         type="text"

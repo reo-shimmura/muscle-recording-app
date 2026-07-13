@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import SetDraftItem from './SetDraftItem';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { WorkoutSetItem, WorkoutSetTemplate, TrainingRecord, AlertMessage } from '../../types';
 
 interface Props {
@@ -68,12 +70,16 @@ export default function ApplySetForm({
       <div className="grid-cols-2">
         <div className="element-container">
           <label>セット選択</label>
-          <select value={selectedTemplateId} onChange={(e) => onTemplateSelect(e.target.value)}>
-            <option value="">-- 保存済みセットを選択 --</option>
-            {setTemplates.map((template) => (
-              <option key={template.id} value={template.id}>{template.name}</option>
-            ))}
-          </select>
+          <Select value={selectedTemplateId} onValueChange={(value) => onTemplateSelect(value ?? '')}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="-- 保存済みセットを選択 --" />
+            </SelectTrigger>
+            <SelectContent>
+              {setTemplates.map((template) => (
+                <SelectItem key={template.id} value={template.id}>{template.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <div className="element-container">
           <label>日付</label>
@@ -94,9 +100,9 @@ export default function ApplySetForm({
         />
       </div>
 
-      <button type="submit" disabled={loading || setItemsDraft.length === 0}>
+      <Button type="submit" disabled={loading || setItemsDraft.length === 0}>
         {loading ? <span className="spinner"></span> : '🚀'} セット内容を一括記録
-      </button>
+      </Button>
     </form>
   );
 }

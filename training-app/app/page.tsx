@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
 import TabNav from './components/TabNav';
 import AlertMessage from './components/AlertMessage';
 import DeleteConfirmModal from './components/DeleteConfirmModal';
@@ -123,48 +124,50 @@ export default function Home() {
 
   return (
     <div>
-      <div className="card">
-        {message && <AlertMessage message={message} />}
+      <Card>
+        <CardContent>
+          {message && <AlertMessage message={message} />}
 
-        <TabNav tabs={MAIN_TABS} activeTab={tab} onTabChange={setTab} />
+          <TabNav tabs={MAIN_TABS} activeTab={tab} onTabChange={setTab} />
 
-        {tab === 'write' && (
-          <RecordTab
-            customExercises={customExercises}
-            customExercisesWithCategory={customExercisesWithCategory}
-            allExercisesFlat={allExercisesFlat}
-            loading={loading}
-            onSave={handleSaveRecords}
-            onSaveExercise={handleSaveExercise}
-            showMessage={showMessage}
-          />
-        )}
+          {tab === 'write' && (
+            <RecordTab
+              customExercises={customExercises}
+              customExercisesWithCategory={customExercisesWithCategory}
+              allExercisesFlat={allExercisesFlat}
+              loading={loading}
+              onSave={handleSaveRecords}
+              onSaveExercise={handleSaveExercise}
+              showMessage={showMessage}
+            />
+          )}
 
-        {tab === 'goals' && (
-          <GoalsTab
-            goals={goals}
-            allExercisesFlat={allExercisesFlat}
-            onAddGoal={addGoal}
-          />
-        )}
+          {tab === 'goals' && (
+            <GoalsTab
+              goals={goals}
+              allExercisesFlat={allExercisesFlat}
+              onAddGoal={addGoal}
+            />
+          )}
 
-        {tab === 'calendar' && (
-          <CalendarTab
-            records={records}
-            images={images}
-            onImageUpload={handleImageUpload}
-            showMessage={showMessage}
-          />
-        )}
+          {tab === 'calendar' && (
+            <CalendarTab
+              records={records}
+              images={images}
+              onImageUpload={handleImageUpload}
+              showMessage={showMessage}
+            />
+          )}
 
-        {tab === 'details' && (
-          <DetailsTab
-            records={records}
-            customExercisesWithCategory={customExercisesWithCategory}
-            onDeleteRequest={setDeleteConfirm}
-          />
-        )}
-      </div>
+          {tab === 'details' && (
+            <DetailsTab
+              records={records}
+              customExercisesWithCategory={customExercisesWithCategory}
+              onDeleteRequest={setDeleteConfirm}
+            />
+          )}
+        </CardContent>
+      </Card>
 
       {deleteConfirm !== null && (
         <DeleteConfirmModal

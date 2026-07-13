@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Button } from '@/components/ui/button';
 import ExerciseSelect from './ExerciseSelect';
 import WorkoutSetList from './WorkoutSetList';
 import type { CustomExercise, TrainingRecord, AlertMessage } from '../../types';
@@ -113,9 +114,9 @@ export default function SingleRecordForm({
       </div>
 
       <div className="element-container">
-        <button type="submit" disabled={loading}>
+        <Button type="submit" disabled={loading}>
           {loading ? <span className="spinner"></span> : '✨'} 記録する
-        </button>
+        </Button>
       </div>
     </form>
   );

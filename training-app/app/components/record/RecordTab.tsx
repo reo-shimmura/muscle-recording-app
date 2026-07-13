@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react';
+import { Button } from '@/components/ui/button';
 import TabNav from '../TabNav';
 import SingleRecordForm from './SingleRecordForm';
 import ApplySetForm from './ApplySetForm';
@@ -62,14 +63,14 @@ export default function RecordTab({
         <label>登録方法</label>
         <div className="row">
           {ENTRY_MODE_TABS.map((tab) => (
-            <button
+            <Button
               key={tab.id}
               type="button"
-              className={entryMode === tab.id ? 'btn-primary' : ''}
+              variant={entryMode === tab.id ? 'default' : 'outline'}
               onClick={() => setEntryMode(tab.id as 'single' | 'set')}
             >
               {tab.label}
-            </button>
+            </Button>
           ))}
         </div>
       </div>

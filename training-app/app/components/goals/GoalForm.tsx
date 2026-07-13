@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { Goal } from '../../types';
 
 interface Props {
@@ -26,11 +28,16 @@ export default function GoalForm({ exercises, onAdd }: Props) {
       <div className="grid-cols-2">
         <div>
           <label>対象種目</label>
-          <select value={exercise} onChange={(e) => setExercise(e.target.value)}>
-            {exercises.map((ex) => (
-              <option key={ex} value={ex}>{ex}</option>
-            ))}
-          </select>
+          <Select value={exercise} onValueChange={(value) => setExercise(value ?? '')}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="種目を選択してください" />
+            </SelectTrigger>
+            <SelectContent>
+              {exercises.map((ex) => (
+                <SelectItem key={ex} value={ex}>{ex}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <div>
           <label>目標値（総セット数）</label>
@@ -43,9 +50,9 @@ export default function GoalForm({ exercises, onAdd }: Props) {
           />
         </div>
       </div>
-      <button type="submit" style={{ marginTop: '1rem' }}>
+      <Button type="submit" className="mt-4">
         🎯 目標を設定する
-      </button>
+      </Button>
     </form>
   );
 }

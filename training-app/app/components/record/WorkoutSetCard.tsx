@@ -1,3 +1,5 @@
+import { Button } from '@/components/ui/button';
+
 interface SetRow {
   weight: number;
   reps: number;
@@ -51,14 +53,14 @@ export default function WorkoutSetCard({ index, setRow, showDelete, onChange, on
         />
       </div>
       {showDelete && (
-        <button
+        <Button
           type="button"
-          className="btn-danger"
-          style={{ flexShrink: 0 }}
+          variant="destructive"
+          className="shrink-0"
           onClick={() => onDelete(index)}
         >
           削除
-        </button>
+        </Button>
       )}
     </div>
   );

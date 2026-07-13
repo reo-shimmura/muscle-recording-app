@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/button';
 import WorkoutSetCard from './WorkoutSetCard';
 
 interface SetRow {
@@ -27,9 +28,9 @@ export default function WorkoutSetList({ sets, onSetChange, onSetDelete, onSetAd
           onDelete={onSetDelete}
         />
       ))}
-      <button type="button" onClick={onSetAdd} style={{ marginTop: '0.25rem' }}>
+      <Button type="button" variant="outline" onClick={onSetAdd} className="mt-1">
         ＋ セットを追加
-      </button>
+      </Button>
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import { Card, CardContent } from '@/components/ui/card';
 import type { ProgressImage } from '../../types';
 
 interface Props {
@@ -13,12 +14,14 @@ export default function ImageGallery({ images }: Props) {
       <h4>登録済み画像</h4>
       <div className="grid-cols-2">
         {images.map((img) => (
-          <div key={img.id ?? `${img.date}-${img.image_path}`} className="record-item">
-            <div className="record-item-meta" style={{ marginBottom: '0.5rem' }}>{img.date}</div>
-            <div className="image-container">
-              <img src={img.image_path} alt={`記録画像-${img.date}`} />
-            </div>
-          </div>
+          <Card key={img.id ?? `${img.date}-${img.image_path}`} className="mb-3 border-l-4 border-l-primary">
+            <CardContent>
+              <div className="record-item-meta" style={{ marginBottom: '0.5rem' }}>{img.date}</div>
+              <div className="image-container">
+                <img src={img.image_path} alt={`記録画像-${img.date}`} />
+              </div>
+            </CardContent>
+          </Card>
         ))}
       </div>
     </div>

@@ -1,4 +1,5 @@
 import React from 'react';
+import { Button } from '@/components/ui/button';
 import type { WorkoutSetItem, AlertMessage } from '../../types';
 
 interface Props {
@@ -44,8 +45,8 @@ export default function CreateSetForm({
           />
         </div>
         <div className="row" style={{ alignItems: 'end' }}>
-          <button type="button" onClick={onAddRow}>種目を追加</button>
-          <button type="button" className="btn-primary" onClick={onSave}>セットを保存</button>
+          <Button type="button" variant="outline" onClick={onAddRow}>種目を追加</Button>
+          <Button type="button" onClick={onSave}>セットを保存</Button>
         </div>
       </div>
 
@@ -96,14 +97,14 @@ export default function CreateSetForm({
                 onChange={(e) => handleItemChange(idx, 'sets', Number(e.target.value))}
               />
             </div>
-            <button
+            <Button
               type="button"
-              className="btn-danger"
+              variant="destructive"
               onClick={() => onRemoveRow(idx)}
               disabled={newTemplateItems.length === 1}
             >
               削除
-            </button>
+            </Button>
           </div>
         </div>
       ))}

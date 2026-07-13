@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/button';
 import type { TrainingRecord } from '../../types';
 
 interface Props {
@@ -47,9 +48,9 @@ export default function CalendarGrid({
   return (
     <div className="element-container">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-        <button type="button" onClick={handlePrevMonth}>← 前月</button>
+        <Button type="button" variant="outline" size="sm" onClick={handlePrevMonth}>← 前月</Button>
         <h4 style={{ margin: 0 }}>{currentYear}年 {MONTH_NAMES[currentMonth]}</h4>
-        <button type="button" onClick={handleNextMonth}>翌月 →</button>
+        <Button type="button" variant="outline" size="sm" onClick={handleNextMonth}>翌月 →</Button>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '0.5rem', marginBottom: '1rem' }}>

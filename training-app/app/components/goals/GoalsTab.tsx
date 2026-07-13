@@ -1,3 +1,4 @@
+import { Card, CardContent } from '@/components/ui/card';
 import GoalForm from './GoalForm';
 import type { Goal } from '../../types';
 
@@ -18,10 +19,12 @@ export default function GoalsTab({ goals, allExercisesFlat, onAddGoal }: Props) 
           <h4>設定済みの目標</h4>
           <div>
             {goals.map((g) => (
-              <div key={g.id} className="record-item">
-                <div className="record-item-title">{g.exercise}</div>
-                <div className="record-item-meta">目標: {g.value} {g.unit}</div>
-              </div>
+              <Card key={g.id} className="mb-3 border-l-4 border-l-primary">
+                <CardContent>
+                  <div className="record-item-title">{g.exercise}</div>
+                  <div className="record-item-meta">目標: {g.value} {g.unit}</div>
+                </CardContent>
+              </Card>
             ))}
           </div>
         </>

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
 import type { ProgressImage, AlertMessage } from '../../types';
 
 interface Props {
@@ -69,9 +70,9 @@ export default function ImageUploadForm({ onUpload, showMessage }: Props) {
           placeholder="撮影条件・体調メモなど"
         />
       </div>
-      <button type="submit" disabled={uploading}>
+      <Button type="submit" disabled={uploading}>
         {uploading ? <span className="spinner"></span> : '📤'} 画像を登録する
-      </button>
+      </Button>
     </form>
   );
 }
