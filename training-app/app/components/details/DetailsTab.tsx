@@ -1,27 +1,94 @@
+'use client'
+
+import { useCallback, useMemo, useState } from 'react';
 import RecordCard from './RecordCard';
-import type { TrainingRecord } from '../../types';
+import DetailsFilters from './DetailsFilters';
+import StatsChart from './StatsChart';
+import { buildExerciseCategoryMap, UNCATEGORIZED_LABEL } from '../../constants/exercises';
+import { aggregateDailyStats } from '../../lib/detailsStats';
+import type { TrainingRecord, CustomExercise } from '../../types';
 
 interface Props {
   records: TrainingRecord[];
+  customExercisesWithCategory: CustomExercise[];
   onDeleteRequest: (id: number) => void;
 }
 
-/** 記録詳細タブ：全トレーニング記録の一覧表示と削除起点 */
-export default function DetailsTab({ records, onDeleteRequest }: Props) {
+const ALL_VALUE = '';
+
+/** 記録詳細タブ：カテゴリ・種目でのフィルター、日別統計グラフ、記録一覧を表示 */
+export default function DetailsTab({ records, customExercisesWithCategory, onDeleteRequest }: Props) {
+  const [category, setCategory] = useState(ALL_VALUE);
+  const [exercise, setExercise] = useState(ALL_VALUE);
+
+  const categoryMap = useMemo(
+    () => buildExerciseCategoryMap(customExercisesWithCategory),
+    [customExercisesWithCategory]
+  );
+  const categoryOf = useCallback(
+    (exerciseName: string) => categoryMap[exerciseName] ?? UNCATEGORIZED_LABEL,
+    [categoryMap]
+  );
+
+  const categories = useMemo(
+    () => Array.from(new Set(records.map((r) => categoryOf(r.exercise)))).sort(),
+    [records, categoryOf]
+  );
+
+  // 選択中のカテゴリに属する種目のみを候補にする
+  const exerciseOptions = useMemo(() => {
+    const scoped = records.filter((r) => !category || categoryOf(r.exercise) === category);
+    return Array.from(new Set(scoped.map((r) => r.exercise))).sort();
+  }, [records, category, categoryOf]);
+
+  const filteredRecords = useMemo(() => {
+    return records.filter((r) => {
+      if (category && categoryOf(r.exercise) !== category) return false;
+      if (exercise && r.exercise !== exercise) return false;
+      return true;
+    });
+  }, [records, category, exercise, categoryOf]);
+
+  const dailyStats = useMemo(() => aggregateDailyStats(filteredRecords), [filteredRecords]);
+
+  // カテゴリを変更したら、別カテゴリの種目が選択されたままにならないようリセットする
+  const handleCategoryChange = (value: string) => {
+    setCategory(value);
+    setExercise(ALL_VALUE);
+  };
+
   return (
     <div>
-      <h3>📊 記録一覧</h3>
+      <h3>📊 統計・記録詳細</h3>
+
       {records.length === 0 ? (
         <div className="alert alert-info">
           まだ記録がありません。「記録追加」タブで追加してください。
         </div>
       ) : (
-        <div>
-          <p className="small-muted">{records.length} 件の記録</p>
-          {records.map((r) => (
-            <RecordCard key={r.id} record={r} onDeleteRequest={onDeleteRequest} />
-          ))}
-        </div>
+        <>
+          <DetailsFilters
+            categories={categories}
+            exercises={exerciseOptions}
+            selectedCategory={category}
+            selectedExercise={exercise}
+            onCategoryChange={handleCategoryChange}
+            onExerciseChange={setExercise}
+          />
+
+          {filteredRecords.length === 0 ? (
+            <div className="alert alert-info">該当する記録がありません。</div>
+          ) : (
+            <>
+              <StatsChart data={dailyStats} />
+
+              <p className="small-muted">{filteredRecords.length} 件の記録</p>
+              {filteredRecords.map((r) => (
+                <RecordCard key={r.id} record={r} onDeleteRequest={onDeleteRequest} />
+              ))}
+            </>
+          )}
+        </>
       )}
     </div>
   );

@@ -160,6 +160,7 @@ export default function Home() {
         {tab === 'details' && (
           <DetailsTab
             records={records}
+            customExercisesWithCategory={customExercisesWithCategory}
             onDeleteRequest={setDeleteConfirm}
           />
         )}
