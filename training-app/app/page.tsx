@@ -2,9 +2,10 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import TabNav from './components/TabNav';
+import BottomNav from './components/BottomNav';
 import AlertMessage from './components/AlertMessage';
 import DeleteConfirmModal from './components/DeleteConfirmModal';
+import HomeTab from './components/home/HomeTab';
 import RecordTab from './components/record/RecordTab';
 import GoalsTab from './components/goals/GoalsTab';
 import CalendarTab from './components/calendar/CalendarTab';
@@ -15,14 +16,15 @@ import { DEFAULT_EXERCISES, DEFAULT_EXERCISE_SET } from './constants/exercises';
 import type { CustomExercise, TrainingRecord, ProgressImage, AlertMessage as AlertMessageType } from './types';
 
 const MAIN_TABS = [
-  { id: 'write', label: '📝 記録追加' },
-  { id: 'goals', label: '🎯 目標管理' },
-  { id: 'calendar', label: '📅 カレンダー' },
-  { id: 'details', label: '📊 統計・記録詳細' },
+  { id: 'home', label: 'ホーム', icon: '🏠' },
+  { id: 'write', label: '記録追加', icon: '📝' },
+  { id: 'goals', label: '目標管理', icon: '🎯' },
+  { id: 'calendar', label: 'カレンダー', icon: '📅' },
+  { id: 'details', label: '統計・詳細', icon: '📊' },
 ];
 
 export default function Home() {
-  const [tab, setTab] = useState<string>('write');
+  const [tab, setTab] = useState<string>('home');
   const [message, setMessage] = useState<AlertMessageType | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
   const [customExercisesWithCategory, setCustomExercisesWithCategory] = useState<CustomExercise[]>([]);
@@ -137,7 +139,16 @@ export default function Home() {
         <CardContent>
           {message && <AlertMessage message={message} />}
 
-          <TabNav tabs={MAIN_TABS} activeTab={tab} onTabChange={setTab} />
+          {tab === 'home' && (
+            <HomeTab
+              longTermGoals={longTermGoals}
+              weeklyGoal={weeklyGoal}
+              monthlyGoals={monthlyGoals}
+              records={records}
+              customExercisesWithCategory={customExercisesWithCategory}
+              onNavigateToGoals={() => setTab('goals')}
+            />
+          )}
 
           {tab === 'write' && (
             <RecordTab
@@ -184,6 +195,9 @@ export default function Home() {
           )}
         </CardContent>
       </Card>
+
+      <div className="bottom-nav-spacer" />
+      <BottomNav tabs={MAIN_TABS} activeTab={tab} onTabChange={setTab} />
 
       {deleteConfirm !== null && (
         <DeleteConfirmModal
