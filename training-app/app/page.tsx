@@ -10,8 +10,9 @@ import GoalsTab from './components/goals/GoalsTab';
 import CalendarTab from './components/calendar/CalendarTab';
 import DetailsTab from './components/details/DetailsTab';
 import { useTrainingData } from './hooks/useTrainingData';
+import { useGoals } from './hooks/useGoals';
 import { DEFAULT_EXERCISES, DEFAULT_EXERCISE_SET } from './constants/exercises';
-import type { CustomExercise, Goal, TrainingRecord, ProgressImage, AlertMessage as AlertMessageType } from './types';
+import type { CustomExercise, TrainingRecord, ProgressImage, AlertMessage as AlertMessageType } from './types';
 
 const MAIN_TABS = [
   { id: 'write', label: '📝 記録追加' },
@@ -22,7 +23,6 @@ const MAIN_TABS = [
 
 export default function Home() {
   const [tab, setTab] = useState<string>('write');
-  const [goals, setGoals] = useState<Goal[]>([]);
   const [message, setMessage] = useState<AlertMessageType | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
   const [customExercisesWithCategory, setCustomExercisesWithCategory] = useState<CustomExercise[]>([]);
@@ -33,6 +33,16 @@ export default function Home() {
   }, []);
 
   const { records, images, loading, setRecords, setImages, fetchData } = useTrainingData(showMessage);
+  const {
+    longTermGoals,
+    weeklyGoal,
+    monthlyGoals,
+    fetchGoals,
+    addLongTermGoal,
+    deleteLongTermGoal,
+    saveWeeklyGoal,
+    saveMonthlyGoals,
+  } = useGoals(showMessage);
 
   const fetchExercises = useCallback(async () => {
     try {
@@ -48,6 +58,7 @@ export default function Home() {
   useEffect(() => {
     fetchData();
     fetchExercises();
+    fetchGoals();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -120,8 +131,6 @@ export default function Home() {
     setImages((prev) => [image, ...prev]);
   };
 
-  const addGoal = (g: Goal) => setGoals((prev) => [...prev, { ...g, id: Date.now() }]);
-
   return (
     <div>
       <Card>
@@ -144,9 +153,16 @@ export default function Home() {
 
           {tab === 'goals' && (
             <GoalsTab
-              goals={goals}
+              longTermGoals={longTermGoals}
+              weeklyGoal={weeklyGoal}
+              monthlyGoals={monthlyGoals}
+              records={records}
+              customExercisesWithCategory={customExercisesWithCategory}
               allExercisesFlat={allExercisesFlat}
-              onAddGoal={addGoal}
+              onAddLongTermGoal={addLongTermGoal}
+              onDeleteLongTermGoal={deleteLongTermGoal}
+              onSaveWeeklyGoal={saveWeeklyGoal}
+              onSaveMonthlyGoals={saveMonthlyGoals}
             />
           )}
 

@@ -1,38 +1,61 @@
-import { Card, CardContent } from '@/components/ui/card';
-import GoalForm from './GoalForm';
-import type { Goal } from '../../types';
+import { useMemo } from 'react';
+import LongTermGoalSection from './LongTermGoalSection';
+import WeeklyGoalSection from './WeeklyGoalSection';
+import MonthlyGoalSection from './MonthlyGoalSection';
+import { buildExerciseCategoryMap } from '../../constants/exercises';
+import type { LongTermGoal, FrequencyGoal, GoalMetric, TrainingRecord, CustomExercise } from '../../types';
 
 interface Props {
-  goals: Goal[];
+  longTermGoals: LongTermGoal[];
+  weeklyGoal: FrequencyGoal | null;
+  monthlyGoals: FrequencyGoal[];
+  records: TrainingRecord[];
+  customExercisesWithCategory: CustomExercise[];
   allExercisesFlat: string[];
-  onAddGoal: (goal: Goal) => void;
+  onAddLongTermGoal: (goal: { exercise: string; metric: GoalMetric; target_value: number; unit: string }) => void;
+  onDeleteLongTermGoal: (id: number) => void;
+  onSaveWeeklyGoal: (targetCount: number) => void;
+  onSaveMonthlyGoals: (items: { category: string; target_count: number }[]) => void;
 }
 
-/** 目標管理タブ：目標入力フォームと設定済み目標の一覧を表示 */
-export default function GoalsTab({ goals, allExercisesFlat, onAddGoal }: Props) {
+/** 目標管理タブ：①長期目標 ②週間目標 ③月間目標 の3種類の目標を設定・表示する */
+export default function GoalsTab({
+  longTermGoals,
+  weeklyGoal,
+  monthlyGoals,
+  records,
+  customExercisesWithCategory,
+  allExercisesFlat,
+  onAddLongTermGoal,
+  onDeleteLongTermGoal,
+  onSaveWeeklyGoal,
+  onSaveMonthlyGoals,
+}: Props) {
+  const categoryMap = useMemo(
+    () => buildExerciseCategoryMap(customExercisesWithCategory),
+    [customExercisesWithCategory]
+  );
+
   return (
     <div>
-      <h3>🎯 目標を追加</h3>
-      <GoalForm onAdd={onAddGoal} exercises={allExercisesFlat} />
-      {goals.length > 0 ? (
-        <>
-          <h4>設定済みの目標</h4>
-          <div>
-            {goals.map((g) => (
-              <Card key={g.id} className="mb-3 border-l-4 border-l-primary">
-                <CardContent>
-                  <div className="record-item-title">{g.exercise}</div>
-                  <div className="record-item-meta">目標: {g.value} {g.unit}</div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </>
-      ) : (
-        <div className="alert alert-info">
-          まだ目標がありません。上記で目標を追加してください。
-        </div>
-      )}
+      <h3>🎯 目標管理</h3>
+
+      <LongTermGoalSection
+        goals={longTermGoals}
+        records={records}
+        allExercisesFlat={allExercisesFlat}
+        onAdd={onAddLongTermGoal}
+        onDelete={onDeleteLongTermGoal}
+      />
+
+      <WeeklyGoalSection weeklyGoal={weeklyGoal} records={records} onSave={onSaveWeeklyGoal} />
+
+      <MonthlyGoalSection
+        monthlyGoals={monthlyGoals}
+        records={records}
+        categoryMap={categoryMap}
+        onSave={onSaveMonthlyGoals}
+      />
     </div>
   );
 }

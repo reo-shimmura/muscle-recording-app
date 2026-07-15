@@ -46,6 +46,22 @@ async function initSchema(db: Client): Promise<void> {
         category TEXT NOT NULL,
         created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
       )`,
+      `CREATE TABLE IF NOT EXISTS long_term_goals (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        exercise TEXT NOT NULL,
+        metric TEXT NOT NULL,
+        target_value REAL NOT NULL,
+        unit TEXT NOT NULL,
+        created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+      )`,
+      `CREATE TABLE IF NOT EXISTS frequency_goals (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        period_type TEXT NOT NULL,
+        category TEXT,
+        target_count INTEGER NOT NULL,
+        created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
+        UNIQUE(period_type, category)
+      )`,
     ],
     'write'
   );

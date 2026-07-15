@@ -9,11 +9,26 @@ export interface TrainingRecord {
   memo: string;
 }
 
-export interface Goal {
-  id: string | number;
+export type GoalMetric = 'max_weight' | 'total_sets' | 'total_reps';
+export type PeriodType = 'week' | 'month';
+
+/** ①長期目標：種目ごとの数値目標（例: ベンチプレス 最大重量60kg） */
+export interface LongTermGoal {
+  id: number;
   exercise: string;
-  value: number;
+  metric: GoalMetric;
+  target_value: number;
   unit: string;
+}
+
+/** ②週間目標・③月間目標：期間内のトレーニング実施回数目標
+ *  category === '' の場合は「全体」（週間目標で使用）
+ */
+export interface FrequencyGoal {
+  id: number;
+  period_type: PeriodType;
+  category: string;
+  target_count: number;
 }
 
 export interface ProgressImage {
