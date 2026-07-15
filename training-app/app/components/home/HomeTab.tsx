@@ -52,16 +52,16 @@ export default function HomeTab({
       .slice(0, MAX_ITEMS);
   }, [longTermGoals, records]);
 
-  const monthlyHighlights = useMemo(() => {
+  // 月間目標は全カテゴリ分を一覧できるようにする（長期目標のみ主要件数に絞る）
+  const monthlyProgressList = useMemo(() => {
     return monthlyGoals
       .filter((goal) => goal.target_count > 0)
       .map((goal) => ({ goal, progress: calcMonthlyGoalProgress(goal, records, categoryMap) }))
-      .sort((a, b) => a.progress.percent - b.progress.percent)
-      .slice(0, MAX_ITEMS);
+      .sort((a, b) => a.progress.percent - b.progress.percent);
   }, [monthlyGoals, records, categoryMap]);
 
   const hasAnyGoal =
-    longTermGoals.length > 0 || weeklyProgress !== null || monthlyHighlights.length > 0;
+    longTermGoals.length > 0 || weeklyProgress !== null || monthlyProgressList.length > 0;
 
   return (
     <div>
@@ -145,11 +145,11 @@ export default function HomeTab({
         </div>
       )}
 
-      {monthlyHighlights.length > 0 && (
+      {monthlyProgressList.length > 0 && (
         <div className="element-container">
           <h4>🗓️ 月間目標</h4>
           <div className="row" style={{ flexWrap: 'wrap', justifyContent: 'center' }}>
-            {monthlyHighlights.map(({ goal, progress }) => (
+            {monthlyProgressList.map(({ goal, progress }) => (
               <GoalRing
                 key={goal.id}
                 label={goal.category}
