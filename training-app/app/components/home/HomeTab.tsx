@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import GoalRing from './GoalRing';
 import CalendarGrid from '../calendar/CalendarGrid';
 import { buildExerciseCategoryMap } from '../../constants/exercises';
@@ -81,9 +82,11 @@ export default function HomeTab({
           onDateSelect={setSelectedDate}
         />
 
-        {selectedDate && (
-          <div>
-            <h4>📋 {selectedDate} のトレーニング内容</h4>
+        <Dialog open={!!selectedDate} onOpenChange={(open) => { if (!open) setSelectedDate(null); }}>
+          <DialogContent className="sm:max-w-md max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>📋 {selectedDate} のトレーニング内容</DialogTitle>
+            </DialogHeader>
             {selectedDateRecords.length === 0 ? (
               <div className="small-muted">この日のトレーニング記録はありません。</div>
             ) : (
@@ -102,8 +105,8 @@ export default function HomeTab({
                 ))}
               </div>
             )}
-          </div>
-        )}
+          </DialogContent>
+        </Dialog>
       </div>
 
       {!hasAnyGoal && (

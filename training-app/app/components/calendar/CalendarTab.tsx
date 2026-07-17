@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import CalendarGrid from './CalendarGrid';
 import ImageUploadForm from './ImageUploadForm';
 import ImageGallery from './ImageGallery';
@@ -38,9 +39,11 @@ export default function CalendarTab({ records, images, onImageUpload, showMessag
         onDateSelect={setSelectedDate}
       />
 
-      {selectedDate && (
-        <div className="element-container" style={{ marginTop: '2rem' }}>
-          <h4>📋 {selectedDate} のトレーニング内容</h4>
+      <Dialog open={!!selectedDate} onOpenChange={(open) => { if (!open) setSelectedDate(null); }}>
+        <DialogContent className="sm:max-w-md max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>📋 {selectedDate} のトレーニング内容</DialogTitle>
+          </DialogHeader>
           {selectedRecords.length === 0 ? (
             <div className="small-muted">この日のトレーニング記録はありません。</div>
           ) : (
@@ -60,8 +63,8 @@ export default function CalendarTab({ records, images, onImageUpload, showMessag
               ))}
             </div>
           )}
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
 
       <hr />
       <h4>画像登録</h4>
