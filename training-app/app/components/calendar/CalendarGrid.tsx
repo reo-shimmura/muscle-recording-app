@@ -37,9 +37,15 @@ export default function CalendarGrid({
 }: Props) {
   const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
   const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
-  const recordCountByDate = new Map<string, number>();
+  // 同じ種目を複数セット記録していても1種目として数える
+  const exercisesByDate = new Map<string, Set<string>>();
   for (const r of records) {
-    recordCountByDate.set(r.date, (recordCountByDate.get(r.date) ?? 0) + 1);
+    if (!exercisesByDate.has(r.date)) exercisesByDate.set(r.date, new Set());
+    exercisesByDate.get(r.date)!.add(r.exercise);
+  }
+  const recordCountByDate = new Map<string, number>();
+  for (const [date, exercises] of exercisesByDate) {
+    recordCountByDate.set(date, exercises.size);
   }
 
   const handlePrevMonth = () => {
