@@ -44,7 +44,3 @@ next-env.d.ts
 /training.db
 /training.db-shm
 /training.db-wal
-
-# アップロード画像（ディレクトリは維持、中身は除外）
-/public/uploads/*
-!/public/uploads/.gitkeep
