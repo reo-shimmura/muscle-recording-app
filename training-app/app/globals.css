@@ -399,7 +399,8 @@ hr {
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 100;
+  /* Select や Dialog のポップアップ(z-index: 50)より低くし、下部項目が隠れないようにする */
+  z-index: 40;
   display: flex;
   justify-content: space-around;
   background: var(--background);
