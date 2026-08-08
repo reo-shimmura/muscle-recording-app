@@ -7,6 +7,7 @@ import AlertMessage from './components/AlertMessage';
 import DeleteConfirmModal from './components/DeleteConfirmModal';
 import HomeTab from './components/home/HomeTab';
 import RecordTab from './components/record/RecordTab';
+import EditRecordModal from './components/record/EditRecordModal';
 import GoalsTab from './components/goals/GoalsTab';
 import CalendarTab from './components/calendar/CalendarTab';
 import DetailsTab from './components/details/DetailsTab';
@@ -27,6 +28,7 @@ export default function Home() {
   const [tab, setTab] = useState<string>('home');
   const [message, setMessage] = useState<AlertMessageType | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
+  const [editingRecord, setEditingRecord] = useState<TrainingRecord | null>(null);
   const [customExercisesWithCategory, setCustomExercisesWithCategory] = useState<CustomExercise[]>([]);
 
   const showMessage = useCallback((msg: AlertMessageType) => {
@@ -116,6 +118,26 @@ export default function Home() {
     }
   };
 
+  const handleUpdateRecord = async (id: number, updated: TrainingRecord): Promise<boolean> => {
+    try {
+      const res = await fetch(`/api/records/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updated),
+      });
+      if (!res.ok) throw new Error(`Update failed: ${res.status}`);
+      const data: TrainingRecord = await res.json();
+      setRecords((prev) => prev.map((r) => (r.id === id ? data : r)));
+      setEditingRecord(null);
+      showMessage({ type: 'success', text: '記録を更新しました。' });
+      return true;
+    } catch (err: unknown) {
+      console.error('Update failed:', err instanceof Error ? err.message : err);
+      showMessage({ type: 'error', text: '記録の更新に失敗しました。' });
+      return false;
+    }
+  };
+
   const handleDeleteRecord = async (id: number) => {
     try {
       const res = await fetch(`/api/records/${id}`, { method: 'DELETE' });
@@ -190,6 +212,7 @@ export default function Home() {
             <DetailsTab
               records={records}
               customExercisesWithCategory={customExercisesWithCategory}
+              onEditRequest={setEditingRecord}
               onDeleteRequest={setDeleteConfirm}
             />
           )}
@@ -204,6 +227,19 @@ export default function Home() {
           loading={loading}
           onConfirm={() => handleDeleteRecord(deleteConfirm)}
           onCancel={() => setDeleteConfirm(null)}
+        />
+      )}
+
+      {editingRecord !== null && (
+        <EditRecordModal
+          record={editingRecord}
+          customExercises={customExercises}
+          customExercisesWithCategory={customExercisesWithCategory}
+          loading={loading}
+          onSave={handleUpdateRecord}
+          onSaveExercise={handleSaveExercise}
+          onCancel={() => setEditingRecord(null)}
+          showMessage={showMessage}
         />
       )}
     </div>
