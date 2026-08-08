@@ -11,13 +11,14 @@ import type { TrainingRecord, CustomExercise } from '../../types';
 interface Props {
   records: TrainingRecord[];
   customExercisesWithCategory: CustomExercise[];
+  onEditRequest: (record: TrainingRecord) => void;
   onDeleteRequest: (id: number) => void;
 }
 
 const ALL_VALUE = '';
 
 /** 記録詳細タブ：カテゴリ・種目でのフィルター、日別統計グラフ、記録一覧を表示 */
-export default function DetailsTab({ records, customExercisesWithCategory, onDeleteRequest }: Props) {
+export default function DetailsTab({ records, customExercisesWithCategory, onEditRequest, onDeleteRequest }: Props) {
   const [category, setCategory] = useState(ALL_VALUE);
   const [exercise, setExercise] = useState(ALL_VALUE);
 
@@ -87,7 +88,7 @@ export default function DetailsTab({ records, customExercisesWithCategory, onDel
 
               <p className="small-muted">{filteredRecords.length} 件の記録</p>
               {filteredRecords.map((r) => (
-                <RecordCard key={r.id} record={r} onDeleteRequest={onDeleteRequest} />
+                <RecordCard key={r.id} record={r} onEditRequest={onEditRequest} onDeleteRequest={onDeleteRequest} />
               ))}
             </>
           )}
