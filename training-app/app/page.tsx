@@ -14,7 +14,7 @@ import DetailsTab from './components/details/DetailsTab';
 import { useTrainingData } from './hooks/useTrainingData';
 import { useGoals } from './hooks/useGoals';
 import { DEFAULT_EXERCISES, DEFAULT_EXERCISE_SET } from './constants/exercises';
-import type { CustomExercise, TrainingRecord, ProgressImage, AlertMessage as AlertMessageType } from './types';
+import type { CustomExercise, TrainingRecord, AlertMessage as AlertMessageType } from './types';
 
 const MAIN_TABS = [
   { id: 'home', label: 'ホーム', icon: '🏠' },
@@ -36,7 +36,7 @@ export default function Home() {
     setTimeout(() => setMessage(null), 4000);
   }, []);
 
-  const { records, images, loading, setRecords, setImages, fetchData } = useTrainingData(showMessage);
+  const { records, loading, setRecords, fetchData } = useTrainingData(showMessage);
   const {
     longTermGoals,
     weeklyGoal,
@@ -151,10 +151,6 @@ export default function Home() {
     }
   };
 
-  const handleImageUpload = (image: ProgressImage) => {
-    setImages((prev) => [image, ...prev]);
-  };
-
   return (
     <div>
       <Card>
@@ -200,12 +196,7 @@ export default function Home() {
           )}
 
           {tab === 'calendar' && (
-            <CalendarTab
-              records={records}
-              images={images}
-              onImageUpload={handleImageUpload}
-              showMessage={showMessage}
-            />
+            <CalendarTab records={records} />
           )}
 
           {tab === 'details' && (

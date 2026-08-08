@@ -33,13 +33,6 @@ async function initSchema(db: Client): Promise<void> {
         memo TEXT NOT NULL DEFAULT '',
         created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
       )`,
-      `CREATE TABLE IF NOT EXISTS progress_images (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        date TEXT NOT NULL,
-        record_id INTEGER REFERENCES records(id) ON DELETE SET NULL,
-        image_path TEXT NOT NULL,
-        created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
-      )`,
       `CREATE TABLE IF NOT EXISTS exercises (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL UNIQUE,
@@ -66,6 +59,7 @@ async function initSchema(db: Client): Promise<void> {
     'write'
   );
   await migrateAddDurationMinutes(db);
+  await migrateDropProgressImages(db);
 }
 
 // 既存のrecordsテーブルに duration_minutes 列がなければ追加する（有酸素種目を分単位で記録するため）
@@ -75,4 +69,9 @@ async function migrateAddDurationMinutes(db: Client): Promise<void> {
   if (!hasDurationColumn) {
     await db.execute('ALTER TABLE records ADD COLUMN duration_minutes REAL');
   }
+}
+
+// 画像登録機能の廃止に伴い、既存DBに残っている progress_images テーブルを削除する
+async function migrateDropProgressImages(db: Client): Promise<void> {
+  await db.execute('DROP TABLE IF EXISTS progress_images');
 }

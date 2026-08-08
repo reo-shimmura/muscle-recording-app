@@ -4,20 +4,14 @@ import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import CalendarGrid from './CalendarGrid';
-import ImageUploadForm from './ImageUploadForm';
-import ImageGallery from './ImageGallery';
-import ImageCompare from './ImageCompare';
-import type { TrainingRecord, ProgressImage, AlertMessage } from '../../types';
+import type { TrainingRecord } from '../../types';
 
 interface Props {
   records: TrainingRecord[];
-  images: ProgressImage[];
-  onImageUpload: (image: ProgressImage) => void;
-  showMessage: (msg: AlertMessage) => void;
 }
 
-/** カレンダータブ：月次表示・日付別記録・画像登録・比較を一元管理 */
-export default function CalendarTab({ records, images, onImageUpload, showMessage }: Props) {
+/** カレンダータブ：月次表示・日付別記録を一元管理 */
+export default function CalendarTab({ records }: Props) {
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -65,14 +59,6 @@ export default function CalendarTab({ records, images, onImageUpload, showMessag
           )}
         </DialogContent>
       </Dialog>
-
-      <hr />
-      <h4>画像登録</h4>
-      <ImageUploadForm onUpload={onImageUpload} showMessage={showMessage} />
-      <ImageGallery images={images} />
-
-      <h4>画像比較（ビフォーアフター）</h4>
-      <ImageCompare />
     </div>
   );
 }

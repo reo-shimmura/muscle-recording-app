@@ -31,14 +31,6 @@ export interface FrequencyGoal {
   target_count: number;
 }
 
-export interface ProgressImage {
-  id?: number;
-  date: string;
-  image_path: string;
-  record_id?: number | null;
-  created_at?: string;
-}
-
 export interface WorkoutSetItem {
   exercise: string;
   weight: number;
