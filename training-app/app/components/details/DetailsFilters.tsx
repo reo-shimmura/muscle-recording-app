@@ -30,10 +30,10 @@ export default function DetailsFilters({
           onValueChange={(value) => onCategoryChange(!value || value === ALL_SENTINEL ? '' : value)}
         >
           <SelectTrigger className="w-full">
-            <SelectValue />
+            <SelectValue>{(value: string) => (value === ALL_SENTINEL ? 'ALL' : value)}</SelectValue>
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value={ALL_SENTINEL}>すべてのカテゴリ</SelectItem>
+            <SelectItem value={ALL_SENTINEL}>ALL</SelectItem>
             {categories.map((c) => (
               <SelectItem key={c} value={c}>{c}</SelectItem>
             ))}
@@ -47,10 +47,10 @@ export default function DetailsFilters({
           onValueChange={(value) => onExerciseChange(!value || value === ALL_SENTINEL ? '' : value)}
         >
           <SelectTrigger className="w-full">
-            <SelectValue />
+            <SelectValue>{(value: string) => (value === ALL_SENTINEL ? 'ALL' : value)}</SelectValue>
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value={ALL_SENTINEL}>すべての種目</SelectItem>
+            <SelectItem value={ALL_SENTINEL}>ALL</SelectItem>
             {exercises.map((ex) => (
               <SelectItem key={ex} value={ex}>{ex}</SelectItem>
             ))}
