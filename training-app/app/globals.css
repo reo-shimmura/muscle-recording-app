@@ -248,6 +248,15 @@ button:disabled {
   color: var(--text-muted);
 }
 
+.record-date-heading {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--foreground);
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
 /* Alert messages */
 .alert {
   padding: 1rem;

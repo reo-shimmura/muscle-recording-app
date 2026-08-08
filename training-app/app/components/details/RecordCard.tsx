@@ -6,19 +6,22 @@ interface Props {
   record: TrainingRecord;
   onEditRequest: (record: TrainingRecord) => void;
   onDeleteRequest: (id: number) => void;
+  hideDate?: boolean;
 }
 
 /** 記録1件を表示し編集・削除ボタンを提供するカード */
-export default function RecordCard({ record, onEditRequest, onDeleteRequest }: Props) {
+export default function RecordCard({ record, onEditRequest, onDeleteRequest, hideDate }: Props) {
+  const detail = record.duration_minutes != null
+    ? `${record.duration_minutes}分`
+    : `${record.weight}kg × ${record.reps}回 × ${record.sets}セット`;
+
   return (
     <Card className="mb-3 border-l-4 border-l-primary">
       <CardContent className="flex items-start justify-between gap-4">
         <div className="flex-1">
           <div className="record-item-title">{record.exercise}</div>
           <div className="record-item-meta">
-            {record.date} • {record.duration_minutes != null
-              ? `${record.duration_minutes}分`
-              : `${record.weight}kg × ${record.reps}回 × ${record.sets}セット`}
+            {hideDate ? detail : `${record.date} • ${detail}`}
           </div>
           {record.memo && (
             <div style={{ marginTop: '0.5rem', fontSize: '0.9rem' }}>{record.memo}</div>
