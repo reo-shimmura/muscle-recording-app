@@ -2,12 +2,13 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import RecordCard from './RecordCard';
+import RecordGroupCard from './RecordGroupCard';
 import DetailsFilters from './DetailsFilters';
 import RecordDateFilter from './RecordDateFilter';
 import StatsChart from './StatsChart';
 import { buildExerciseCategoryMap, CARDIO_CATEGORY, UNCATEGORIZED_LABEL } from '../../constants/exercises';
 import { aggregateDailyStats } from '../../lib/detailsStats';
+import { groupRecordsByExercise } from '../../lib/groupRecords';
 import type { TrainingRecord, CustomExercise } from '../../types';
 
 interface Props {
@@ -165,11 +166,11 @@ export default function DetailsTab({ records, customExercisesWithCategory, onEdi
               {recordsByDate.map(([date, recs]) => (
                 <div key={date} className="mb-4">
                   <div className="record-date-heading">{date}</div>
-                  {recs.map((r) => (
-                    <RecordCard
-                      key={r.id}
-                      record={r}
-                      hideDate
+                  {groupRecordsByExercise(recs).map((group) => (
+                    <RecordGroupCard
+                      key={group.exercise}
+                      exercise={group.exercise}
+                      records={group.records}
                       onEditRequest={onEditRequest}
                       onDeleteRequest={onDeleteRequest}
                     />
