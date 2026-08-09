@@ -18,6 +18,17 @@ export default function CalendarTab({ records }: Props) {
 
   const selectedRecords = selectedDate ? records.filter((r) => r.date === selectedDate) : [];
 
+  // 同じ種目の記録を1ブロックにまとめる（登場順を維持）
+  const groupedRecords: { exercise: string; records: TrainingRecord[] }[] = [];
+  for (const r of selectedRecords) {
+    const group = groupedRecords.find((g) => g.exercise === r.exercise);
+    if (group) {
+      group.records.push(r);
+    } else {
+      groupedRecords.push({ exercise: r.exercise, records: [r] });
+    }
+  }
+
   return (
     <div>
       <h3>📅 トレーニングカレンダー</h3>
@@ -42,16 +53,20 @@ export default function CalendarTab({ records }: Props) {
             <div className="small-muted">この日のトレーニング記録はありません。</div>
           ) : (
             <div>
-              {selectedRecords.map((r) => (
-                <Card key={r.id} className="mb-3 border-l-4 border-l-primary">
+              {groupedRecords.map((group) => (
+                <Card key={group.exercise} className="mb-3 border-l-4 border-l-primary">
                   <CardContent>
-                    <div className="record-item-title">{r.exercise}</div>
-                    <div className="record-item-meta">
-                      {r.duration_minutes != null
-                        ? `${r.duration_minutes}分`
-                        : `${r.weight}kg × ${r.reps}回 × ${r.sets}セット`}
-                    </div>
-                    {r.memo && <div style={{ marginTop: '0.5rem', fontSize: '0.9rem' }}>{r.memo}</div>}
+                    <div className="record-item-title">{group.exercise}</div>
+                    {group.records.map((r) => (
+                      <div key={r.id}>
+                        <div className="record-item-meta">
+                          {r.duration_minutes != null
+                            ? `${r.duration_minutes}分`
+                            : `${r.weight}kg × ${r.reps}回 × ${r.sets}セット`}
+                        </div>
+                        {r.memo && <div style={{ marginTop: '0.5rem', fontSize: '0.9rem' }}>{r.memo}</div>}
+                      </div>
+                    ))}
                   </CardContent>
                 </Card>
               ))}
