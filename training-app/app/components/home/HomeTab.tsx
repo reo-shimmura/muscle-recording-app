@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import GoalRing from './GoalRing';
 import CalendarGrid from '../calendar/CalendarGrid';
 import { buildExerciseCategoryMap } from '../../constants/exercises';
+import { groupRecordsByExercise } from '../../lib/groupRecords';
 import {
   calcLongTermGoalProgress,
   calcWeeklyGoalProgress,
@@ -37,6 +38,7 @@ export default function HomeTab({
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const selectedDateRecords = selectedDate ? records.filter((r) => r.date === selectedDate) : [];
+  const groupedDateRecords = groupRecordsByExercise(selectedDateRecords);
 
   const categoryMap = useMemo(
     () => buildExerciseCategoryMap(customExercisesWithCategory),
@@ -91,15 +93,17 @@ export default function HomeTab({
               <div className="small-muted">この日のトレーニング記録はありません。</div>
             ) : (
               <div>
-                {selectedDateRecords.map((r) => (
-                  <Card key={r.id} className="mb-3 border-l-4 border-l-primary">
+                {groupedDateRecords.map((group) => (
+                  <Card key={group.exercise} className="mb-3 border-l-4 border-l-primary">
                     <CardContent>
-                      <div className="record-item-title">{r.exercise}</div>
-                      <div className="record-item-meta">
-                        {r.duration_minutes != null
-                          ? `${r.duration_minutes}分`
-                          : `${r.weight}kg × ${r.reps}回 × ${r.sets}セット`}
-                      </div>
+                      <div className="record-item-title">{group.exercise}</div>
+                      {group.records.map((r) => (
+                        <div key={r.id} className="record-item-meta">
+                          {r.duration_minutes != null
+                            ? `${r.duration_minutes}分`
+                            : `${r.weight}kg × ${r.reps}回 × ${r.sets}セット`}
+                        </div>
+                      ))}
                     </CardContent>
                   </Card>
                 ))}
