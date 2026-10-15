@@ -1,10 +1,12 @@
 import type { TrainingRecord } from '../types';
+import { estimateOneRepMax } from './oneRepMax';
 
 export interface DailyStat {
   date: string;
   dailyVolume: number;
   totalVolume: number;
   maxWeight: number;
+  estimatedOneRepMax: number;
   setCount: number;
   durationMinutes: number;
   totalDurationMinutes: number;
@@ -24,11 +26,13 @@ export function aggregateDailyStats(records: TrainingRecord[]): DailyStat[] {
   for (const r of records) {
     const volume = r.weight * r.reps * r.sets;
     const duration = r.duration_minutes ?? 0;
+    const oneRepMax = estimateOneRepMax(r.weight, r.reps);
     const existing = statsByDate.get(r.date);
 
     if (existing) {
       existing.dailyVolume += volume;
       existing.maxWeight = Math.max(existing.maxWeight, r.weight);
+      existing.estimatedOneRepMax = Math.max(existing.estimatedOneRepMax, oneRepMax);
       existing.setCount += r.sets;
       existing.durationMinutes += duration;
       existing.maxDurationMinutes = Math.max(existing.maxDurationMinutes, duration);
@@ -38,6 +42,7 @@ export function aggregateDailyStats(records: TrainingRecord[]): DailyStat[] {
         date: r.date,
         dailyVolume: volume,
         maxWeight: r.weight,
+        estimatedOneRepMax: oneRepMax,
         setCount: r.sets,
         durationMinutes: duration,
         maxDurationMinutes: duration,

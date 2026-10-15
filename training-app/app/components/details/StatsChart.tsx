@@ -11,16 +11,17 @@ interface Props {
   isCardio: boolean;
 }
 
-type StrengthMode = 'totalVolume' | 'dailyVolume' | 'maxWeight' | 'setCount';
+type StrengthMode = 'totalVolume' | 'dailyVolume' | 'maxWeight' | 'estimatedOneRepMax' | 'setCount';
 type CardioMode = 'totalDurationMinutes' | 'durationMinutes' | 'maxDurationMinutes' | 'sessionCount';
 
-const STRENGTH_MODES: StrengthMode[] = ['totalVolume', 'dailyVolume', 'maxWeight', 'setCount'];
+const STRENGTH_MODES: StrengthMode[] = ['totalVolume', 'dailyVolume', 'maxWeight', 'estimatedOneRepMax', 'setCount'];
 const CARDIO_MODES: CardioMode[] = ['totalDurationMinutes', 'durationMinutes', 'maxDurationMinutes', 'sessionCount'];
 
 const STRENGTH_CONFIG: ChartConfig = {
   totalVolume: { label: '総負荷量', color: '#3b82f6' },
   dailyVolume: { label: '日別負荷量', color: '#6366f1' },
   maxWeight: { label: '最大重量', color: '#10b981' },
+  estimatedOneRepMax: { label: '推定1RM', color: '#ef4444' },
   setCount: { label: 'セット数', color: '#f59e0b' },
 };
 
