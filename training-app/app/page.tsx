@@ -14,6 +14,7 @@ import CalendarTab from './components/calendar/CalendarTab';
 import DetailsTab from './components/details/DetailsTab';
 import { useTrainingData } from './hooks/useTrainingData';
 import { useGoals } from './hooks/useGoals';
+import { useBodyWeights } from './hooks/useBodyWeights';
 import { DEFAULT_EXERCISES, DEFAULT_EXERCISE_SET } from './constants/exercises';
 import type { CustomExercise, TrainingRecord, AlertMessage as AlertMessageType } from './types';
 
@@ -48,6 +49,8 @@ export default function Home() {
     saveWeeklyGoal,
     saveMonthlyGoals,
   } = useGoals(showMessage);
+  const { bodyWeights, loading: bodyWeightLoading, fetchBodyWeights, saveBodyWeight, deleteBodyWeight } =
+    useBodyWeights(showMessage);
 
   const fetchExercises = useCallback(async () => {
     try {
@@ -64,6 +67,7 @@ export default function Home() {
     fetchData();
     fetchExercises();
     fetchGoals();
+    fetchBodyWeights();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -176,6 +180,10 @@ export default function Home() {
               records={records}
               customExercisesWithCategory={customExercisesWithCategory}
               onNavigateToGoals={() => setTab('goals')}
+              bodyWeights={bodyWeights}
+              bodyWeightLoading={bodyWeightLoading}
+              onSaveBodyWeight={saveBodyWeight}
+              onDeleteBodyWeight={deleteBodyWeight}
             />
           )}
 

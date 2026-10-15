@@ -55,6 +55,12 @@ async function initSchema(db: Client): Promise<void> {
         created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
         UNIQUE(period_type, category)
       )`,
+      `CREATE TABLE IF NOT EXISTS body_weights (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        date TEXT NOT NULL UNIQUE,
+        weight_kg REAL NOT NULL,
+        created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+      )`,
     ],
     'write'
   );
