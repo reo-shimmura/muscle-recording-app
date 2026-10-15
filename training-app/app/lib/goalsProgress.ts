@@ -12,7 +12,7 @@ function clampPercent(current: number, target: number): number {
   return Math.min(100, Math.round((current / target) * 100));
 }
 
-function toDateStr(d: Date): string {
+export function toDateStr(d: Date): string {
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, '0');
   const day = String(d.getDate()).padStart(2, '0');
@@ -20,7 +20,7 @@ function toDateStr(d: Date): string {
 }
 
 /** その週の月曜日（0時）を返す */
-function getWeekStart(date: Date): Date {
+export function getWeekStart(date: Date): Date {
   const d = new Date(date);
   const day = d.getDay(); // 0=日, 1=月, ..., 6=土
   const diffToMonday = day === 0 ? -6 : 1 - day;
