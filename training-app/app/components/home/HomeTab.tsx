@@ -3,6 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import GoalRing from './GoalRing';
+import BodyWeightCard from './BodyWeightCard';
 import CalendarGrid from '../calendar/CalendarGrid';
 import { buildExerciseCategoryMap } from '../../constants/exercises';
 import { groupRecordsByExercise } from '../../lib/groupRecords';
@@ -12,7 +13,7 @@ import {
   calcMonthlyGoalProgress,
 } from '../../lib/goalsProgress';
 import { calcWeeklyGoalStreak } from '../../lib/streak';
-import type { LongTermGoal, FrequencyGoal, TrainingRecord, CustomExercise } from '../../types';
+import type { LongTermGoal, FrequencyGoal, TrainingRecord, CustomExercise, BodyWeight } from '../../types';
 
 interface Props {
   longTermGoals: LongTermGoal[];
@@ -21,6 +22,10 @@ interface Props {
   records: TrainingRecord[];
   customExercisesWithCategory: CustomExercise[];
   onNavigateToGoals: () => void;
+  bodyWeights: BodyWeight[];
+  bodyWeightLoading: boolean;
+  onSaveBodyWeight: (date: string, weightKg: number) => Promise<boolean>;
+  onDeleteBodyWeight: (id: number) => void;
 }
 
 // ホームでは主要な目標のみ抜粋し、残りは目標管理タブに誘導する
@@ -34,6 +39,10 @@ export default function HomeTab({
   records,
   customExercisesWithCategory,
   onNavigateToGoals,
+  bodyWeights,
+  bodyWeightLoading,
+  onSaveBodyWeight,
+  onDeleteBodyWeight,
 }: Props) {
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
@@ -71,6 +80,13 @@ export default function HomeTab({
   return (
     <div>
       <h3>🏠 ホーム</h3>
+
+      <BodyWeightCard
+        bodyWeights={bodyWeights}
+        loading={bodyWeightLoading}
+        onSave={onSaveBodyWeight}
+        onDelete={onDeleteBodyWeight}
+      />
 
       <div className="element-container">
         <h4>📅 カレンダー</h4>

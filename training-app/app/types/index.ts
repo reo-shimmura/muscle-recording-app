@@ -44,6 +44,12 @@ export interface WorkoutSetTemplate {
   items: WorkoutSetItem[];
 }
 
+export interface BodyWeight {
+  id: number;
+  date: string;
+  weight_kg: number;
+}
+
 export interface CustomExercise {
   id: number;
   name: string;
