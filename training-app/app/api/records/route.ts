@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { recordsRepository } from '@/lib/repository/records';
+import { LIMITS, ValidationError, parseRecordInput, readJson, validationErrorResponse } from '@/lib/validation';
 
 export async function GET() {
   try {
@@ -13,39 +14,21 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const body: unknown = await request.json();
+    const body = await readJson(request);
 
     if (Array.isArray(body)) {
-      const records = await recordsRepository.createMany(
-        body.map((item) => ({
-          date: String(item.date),
-          exercise: String(item.exercise),
-          weight: Number(item.weight) || 0,
-          reps: Number(item.reps) || 1,
-          sets: Number(item.sets) || 1,
-          duration_minutes: item.duration_minutes != null ? Number(item.duration_minutes) : null,
-          memo: String(item.memo ?? ''),
-        }))
-      );
+      if (body.length === 0 || body.length > LIMITS.recordsPerRequest) {
+        throw new ValidationError(`一度に保存できる記録は1〜${LIMITS.recordsPerRequest}件です。`);
+      }
+      const records = await recordsRepository.createMany(body.map(parseRecordInput));
       return NextResponse.json(records, { status: 201 });
     }
 
-    const item = body as Record<string, unknown>;
-    if (!item.date || !item.exercise) {
-      return NextResponse.json({ error: 'date と exercise は必須です。' }, { status: 400 });
-    }
-
-    const record = await recordsRepository.create({
-      date: String(item.date),
-      exercise: String(item.exercise),
-      weight: Number(item.weight) || 0,
-      reps: Number(item.reps) || 1,
-      sets: Number(item.sets) || 1,
-      duration_minutes: item.duration_minutes != null ? Number(item.duration_minutes) : null,
-      memo: String(item.memo ?? ''),
-    });
+    const record = await recordsRepository.create(parseRecordInput(body));
     return NextResponse.json(record, { status: 201 });
   } catch (error) {
+    const invalid = validationErrorResponse(error);
+    if (invalid) return invalid;
     console.error('POST /api/records:', error);
     return NextResponse.json({ error: '記録の保存に失敗しました。' }, { status: 500 });
   }

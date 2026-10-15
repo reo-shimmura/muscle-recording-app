@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { exercisesRepository } from '../../../lib/repository/exercises';
+import { exercisesRepository } from '@/lib/repository/exercises';
+import { LIMITS, asObject, readJson, requireString, validationErrorResponse } from '@/lib/validation';
 
 export async function GET() {
   try {
@@ -13,13 +14,14 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const { name, category } = await request.json();
-    if (!name?.trim() || !category?.trim()) {
-      return NextResponse.json({ error: 'name と category は必須です' }, { status: 400 });
-    }
-    const exercise = await exercisesRepository.upsert(name.trim(), category.trim());
+    const body = asObject(await readJson(request));
+    const name = requireString(body.name, 'name', LIMITS.exerciseName);
+    const category = requireString(body.category, 'category', LIMITS.category);
+    const exercise = await exercisesRepository.upsert(name, category);
     return NextResponse.json(exercise, { status: 201 });
   } catch (err) {
+    const invalid = validationErrorResponse(err);
+    if (invalid) return invalid;
     console.error('POST /api/exercises error:', err);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
