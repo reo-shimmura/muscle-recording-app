@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { NumberInput } from '@/components/ui/number-input';
 import ExerciseSelect from './ExerciseSelect';
 import { buildExerciseCategoryMap, CARDIO_CATEGORY } from '../../constants/exercises';
 import type { CustomExercise, TrainingRecord, AlertMessage } from '../../types';
@@ -118,11 +119,10 @@ export default function EditRecordModal({
           {isCardio ? (
             <div className="element-container">
               <label>時間（分）</label>
-              <input
-                type="number"
+              <NumberInput
                 min="0"
                 value={durationMinutes}
-                onChange={(e) => setDurationMinutes(Number(e.target.value))}
+                onChange={setDurationMinutes}
                 required
               />
             </div>
@@ -130,28 +130,25 @@ export default function EditRecordModal({
             <div className="element-container">
               <label>重量・回数・セット数</label>
               <div className="row">
-                <input
-                  type="number"
+                <NumberInput
                   min="0"
                   step="0.5"
                   value={weight}
-                  onChange={(e) => setWeight(Number(e.target.value))}
+                  onChange={setWeight}
                   placeholder="重量(kg)"
                   required
                 />
-                <input
-                  type="number"
+                <NumberInput
                   min="1"
                   value={reps}
-                  onChange={(e) => setReps(Number(e.target.value))}
+                  onChange={setReps}
                   placeholder="回数"
                   required
                 />
-                <input
-                  type="number"
+                <NumberInput
                   min="1"
                   value={sets}
-                  onChange={(e) => setSets(Number(e.target.value))}
+                  onChange={setSets}
                   placeholder="セット数"
                   required
                 />

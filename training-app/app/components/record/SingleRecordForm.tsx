@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { NumberInput } from '@/components/ui/number-input';
 import ExerciseSelect from './ExerciseSelect';
 import WorkoutSetList from './WorkoutSetList';
 import { buildExerciseCategoryMap, CARDIO_CATEGORY } from '../../constants/exercises';
@@ -125,11 +126,10 @@ export default function SingleRecordForm({
       {isCardio ? (
         <div className="element-container">
           <label>時間（分）</label>
-          <input
-            type="number"
+          <NumberInput
             min="0"
             value={durationMinutes}
-            onChange={(e) => setDurationMinutes(Number(e.target.value))}
+            onChange={setDurationMinutes}
             required
           />
         </div>
