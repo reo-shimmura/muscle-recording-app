@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { NumberInput } from '@/components/ui/number-input';
 
 interface SetRow {
   weight: number;
@@ -33,22 +34,20 @@ export default function WorkoutSetCard({ index, setRow, showDelete, onChange, on
       </span>
       <div style={{ flex: 1 }}>
         <label style={{ fontSize: '0.8rem' }}>重量 (kg)</label>
-        <input
-          type="number"
+        <NumberInput
           step="0.5"
           min="0"
           value={setRow.weight}
-          onChange={(e) => onChange(index, 'weight', Number(e.target.value))}
+          onChange={(value) => onChange(index, 'weight', value)}
           required
         />
       </div>
       <div style={{ flex: 1 }}>
         <label style={{ fontSize: '0.8rem' }}>回数</label>
-        <input
-          type="number"
+        <NumberInput
           min="1"
           value={setRow.reps}
-          onChange={(e) => onChange(index, 'reps', Number(e.target.value))}
+          onChange={(value) => onChange(index, 'reps', value)}
           required
         />
       </div>

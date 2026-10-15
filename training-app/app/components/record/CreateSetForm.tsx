@@ -1,5 +1,6 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
+import { NumberInput } from '@/components/ui/number-input';
 import type { WorkoutSetItem, AlertMessage } from '../../types';
 
 interface Props {
@@ -71,30 +72,27 @@ export default function CreateSetForm({
           <div className="row" style={{ alignItems: 'end' }}>
             <div>
               <label>重量</label>
-              <input
-                type="number"
+              <NumberInput
                 min="0"
                 step="0.5"
                 value={item.weight}
-                onChange={(e) => handleItemChange(idx, 'weight', Number(e.target.value))}
+                onChange={(value) => handleItemChange(idx, 'weight', value)}
               />
             </div>
             <div>
               <label>回数</label>
-              <input
-                type="number"
+              <NumberInput
                 min="1"
                 value={item.reps}
-                onChange={(e) => handleItemChange(idx, 'reps', Number(e.target.value))}
+                onChange={(value) => handleItemChange(idx, 'reps', value)}
               />
             </div>
             <div style={{ marginRight: '1rem' }}>
               <label>セット数</label>
-              <input
-                type="number"
+              <NumberInput
                 min="1"
                 value={item.sets}
-                onChange={(e) => handleItemChange(idx, 'sets', Number(e.target.value))}
+                onChange={(value) => handleItemChange(idx, 'sets', value)}
               />
             </div>
             <Button
