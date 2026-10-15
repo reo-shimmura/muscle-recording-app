@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import BottomNav from './components/BottomNav';
 import AlertMessage from './components/AlertMessage';
@@ -151,8 +152,18 @@ export default function Home() {
     }
   };
 
+  const handleLogout = async () => {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    window.location.replace('/login');
+  };
+
   return (
     <div>
+      <div className="mb-2 flex justify-end">
+        <Button variant="ghost" size="sm" onClick={handleLogout}>
+          ログアウト
+        </Button>
+      </div>
       <Card>
         <CardContent>
           {message && <AlertMessage message={message} />}
