@@ -1,34 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { recordsRepository } from '@/lib/repository/records';
+import { parseRecordPatch, readJson, requireId, validationErrorResponse } from '@/lib/validation';
 
 type Params = { params: Promise<{ id: string }> };
 
 export async function PUT(request: NextRequest, { params }: Params) {
   try {
-    const { id } = await params;
-    const numId = Number(id);
-    if (isNaN(numId)) {
-      return NextResponse.json({ error: '無効なIDです。' }, { status: 400 });
-    }
+    const id = requireId((await params).id);
+    const patch = parseRecordPatch(await readJson(request));
 
-    const body = (await request.json()) as Record<string, unknown>;
-    const updated = await recordsRepository.update(numId, {
-      date: body.date !== undefined ? String(body.date) : undefined,
-      exercise: body.exercise !== undefined ? String(body.exercise) : undefined,
-      weight: body.weight !== undefined ? Number(body.weight) : undefined,
-      reps: body.reps !== undefined ? Number(body.reps) : undefined,
-      sets: body.sets !== undefined ? Number(body.sets) : undefined,
-      duration_minutes: body.duration_minutes !== undefined
-        ? (body.duration_minutes != null ? Number(body.duration_minutes) : null)
-        : undefined,
-      memo: body.memo !== undefined ? String(body.memo) : undefined,
-    });
-
+    const updated = await recordsRepository.update(id, patch);
     if (!updated) {
       return NextResponse.json({ error: '記録が見つかりません。' }, { status: 404 });
     }
     return NextResponse.json(updated);
   } catch (error) {
+    const invalid = validationErrorResponse(error);
+    if (invalid) return invalid;
     console.error('PUT /api/records/[id]:', error);
     return NextResponse.json({ error: '記録の更新に失敗しました。' }, { status: 500 });
   }
@@ -36,18 +24,16 @@ export async function PUT(request: NextRequest, { params }: Params) {
 
 export async function DELETE(_request: NextRequest, { params }: Params) {
   try {
-    const { id } = await params;
-    const numId = Number(id);
-    if (isNaN(numId)) {
-      return NextResponse.json({ error: '無効なIDです。' }, { status: 400 });
-    }
+    const id = requireId((await params).id);
 
-    const deleted = await recordsRepository.delete(numId);
+    const deleted = await recordsRepository.delete(id);
     if (!deleted) {
       return NextResponse.json({ error: '記録が見つかりません。' }, { status: 404 });
     }
     return NextResponse.json({ success: true });
   } catch (error) {
+    const invalid = validationErrorResponse(error);
+    if (invalid) return invalid;
     console.error('DELETE /api/records/[id]:', error);
     return NextResponse.json({ error: '記録の削除に失敗しました。' }, { status: 500 });
   }
