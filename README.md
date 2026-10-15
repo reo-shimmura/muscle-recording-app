@@ -17,6 +17,7 @@
 
 その他の特徴:
 
+- パスワードによるログイン認証（未ログイン時は画面・API ともにアクセス不可）
 - ホーム画面に追加できる PWA（`manifest.json` / アイコン同梱）
 - 種目はデフォルト種目に加えて、カテゴリ付きのカスタム種目を登録可能
 - データベースは [libSQL (Turso)](https://turso.tech/) クライアントを使用。接続先を指定しない場合はローカルの SQLite ファイルに自動フォールバックするため、追加設定なしでも動作確認が可能
@@ -42,9 +43,12 @@ muscle-recording-app/
     │   ├── components/   # 画面・タブごとのコンポーネント
     │   ├── hooks/        # データ取得・更新用のカスタムフック
     │   ├── lib/           # 画面向けの集計・加工ロジック
+    │   ├── login/         # ログイン画面
     │   └── page.tsx       # タブ切り替えを行うエントリーポイント
     ├── components/ui/    # shadcn/ui の共通 UI パーツ
+    ├── proxy.ts           # 未認証リクエストのブロック
     └── lib/
+        ├── auth.ts        # パスワード検証・セッション Cookie の署名
         ├── db.ts          # libSQL クライアントの初期化・スキーマ定義
         └── repository/    # テーブルごとのデータアクセス層
 ```
@@ -58,17 +62,25 @@ cd training-app
 pnpm install
 ```
 
-### 2. 環境変数の設定（任意）
+### 2. 環境変数の設定
 
-データベースへの接続は [Turso](https://turso.tech/) を利用する想定ですが、環境変数を設定しない場合はプロジェクトルートの `training.db`（SQLite ファイル）が自動的に使われるため、ローカルでの動作確認だけであればこの手順は不要です。
-
-Turso のデータベースに接続する場合は、`training-app` 直下に `.env.local` を作成し、以下を設定してください。
+`training-app` 直下に `.env.local` を作成し、以下を設定してください。
 
 ```bash
-# Turso ダッシュボード（https://turso.tech/）で発行した値を設定
+# 【必須】ログインパスワード（推測されにくい長いものを推奨）
+APP_PASSWORD=your-strong-password
+# 【必須】セッション署名用の秘密鍵（32文字以上のランダム文字列）
+# 例: node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
+AUTH_SECRET=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# 【任意】Turso ダッシュボード（https://turso.tech/）で発行した値
 TURSO_DATABASE_URL=libsql://xxx.turso.io
 TURSO_AUTH_TOKEN=xxxxxxxx
 ```
+
+- `APP_PASSWORD` / `AUTH_SECRET` が未設定の場合はログインできず、すべての画面・API がブロックされます。
+- `TURSO_*` を設定しない場合は `training-app/training.db`（SQLite ファイル）が自動的に使われるため、ローカルでの動作確認だけであれば不要です。
+- `APP_PASSWORD` または `AUTH_SECRET` を変更すると、ログイン中のすべての端末がログアウトされます。
 
 テーブル（`records` / `exercises` / `long_term_goals` / `frequency_goals`）は初回アクセス時に自動で作成されます。
 
@@ -94,7 +106,9 @@ pnpm lint   # ESLint によるコード検査
 
 1. GitHub リポジトリを Vercel にインポートする
 2. **Root Directory** を `training-app` に設定する
-3. [Turso](https://turso.tech/) でデータベースを作成し、発行された接続情報を Vercel の環境変数に設定する
+3. [Turso](https://turso.tech/) でデータベースを作成し、以下を Vercel の環境変数に設定する
+   - `APP_PASSWORD`（ログインパスワード）
+   - `AUTH_SECRET`（32文字以上のランダム文字列）
    - `TURSO_DATABASE_URL`
    - `TURSO_AUTH_TOKEN`
 4. デプロイを実行する
