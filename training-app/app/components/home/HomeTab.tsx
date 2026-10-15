@@ -11,6 +11,7 @@ import {
   calcWeeklyGoalProgress,
   calcMonthlyGoalProgress,
 } from '../../lib/goalsProgress';
+import { calcCurrentStreak } from '../../lib/streak';
 import type { LongTermGoal, FrequencyGoal, TrainingRecord, CustomExercise } from '../../types';
 
 interface Props {
@@ -46,6 +47,7 @@ export default function HomeTab({
   );
 
   const weeklyProgress = weeklyGoal ? calcWeeklyGoalProgress(weeklyGoal, records) : null;
+  const streak = useMemo(() => calcCurrentStreak(records), [records]);
 
   // 達成率が低い（伸びしろが大きい）順に主要な目標だけを抜粋する
   const longTermHighlights = useMemo(() => {
@@ -112,6 +114,12 @@ export default function HomeTab({
           </DialogContent>
         </Dialog>
       </div>
+
+      {streak > 0 && (
+        <div className="element-container">
+          <div className="alert alert-success">🔥 {streak}日連続で記録中！</div>
+        </div>
+      )}
 
       {!hasAnyGoal && (
         <div className="element-container">
