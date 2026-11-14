@@ -17,3 +17,6 @@ venv/
 
 # Claude Codeのローカル設定・スキル
 .claude/
+# エディタ設定・ポートフォリオ用の出力物
+/.vscode/
+/portfolio/
