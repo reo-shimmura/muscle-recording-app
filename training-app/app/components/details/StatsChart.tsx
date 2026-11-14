@@ -1,10 +1,13 @@
 'use client'
 
-import { useState } from 'react';
-import { CartesianGrid, Line, LineChart, XAxis, YAxis } from 'recharts';
+import { useMemo, useState } from 'react';
+import { CartesianGrid, Line } from 'recharts';
 import { Button } from '@/components/ui/button';
-import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
-import { filterStatsByRange, type DailyStat, type RangeKey } from '../../lib/detailsStats';
+import { type ChartConfig } from '@/components/ui/chart';
+import ScrollableTimeChart from '../charts/ScrollableTimeChart';
+import { getRangeDays, type DailyStat, type RangeKey } from '../../lib/detailsStats';
+import { axisSpanDays, buildTimeAxis, parseLocalDate } from '../../lib/chartTimeAxis';
+import { toDateStr } from '../../lib/goalsProgress';
 
 interface Props {
   data: DailyStat[];
@@ -47,11 +50,18 @@ export default function StatsChart({ data, isCardio }: Props) {
   const [mode, setMode] = useState<StrengthMode | CardioMode>(modes[0]);
   const [range, setRange] = useState<RangeKey>('all');
 
-  const displayData = filterStatsByRange(data, range);
+  // 横軸を時間の数値にするため、各点に日付のミリ秒（time）を持たせる（全期間を描き、範囲は1画面の幅で表す）
+  const chartData = useMemo(() => data.map((s) => ({ ...s, time: parseLocalDate(s.date) })), [data]);
+  const visibleDays = getRangeDays(range);
+  const timeAxis = useMemo(
+    () => buildTimeAxis(chartData.map((s) => s.date), null, toDateStr(new Date()), visibleDays ?? undefined),
+    [chartData, visibleDays]
+  );
+  const scrollable = timeAxis !== null && visibleDays !== null && axisSpanDays(timeAxis) > visibleDays;
 
   return (
     <div className="element-container" style={{ marginTop: '1.5rem' }}>
-      <label>表示範囲</label>
+      <label>1画面の表示幅</label>
       <div className="row" style={{ marginBottom: '0.5rem' }}>
         {RANGE_OPTIONS.map(({ key, label }) => (
           <Button
@@ -66,12 +76,19 @@ export default function StatsChart({ data, isCardio }: Props) {
         ))}
       </div>
 
-      <ChartContainer config={config} className="aspect-auto h-[300px] w-full">
-        <LineChart data={displayData} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
+      {timeAxis === null ? (
+        <div className="small-muted">表示できる記録がありません。</div>
+      ) : (
+        // 記録の間が空くほど点の距離が長くなる時間軸で描き、表示幅より前は横にスライドして見る
+        <ScrollableTimeChart
+          config={config}
+          data={chartData}
+          axis={timeAxis}
+          visibleDays={visibleDays}
+          seriesKey={mode}
+          heightClass="h-[300px]"
+        >
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} />
-          <YAxis tickLine={false} axisLine={false} tickMargin={8} />
-          <ChartTooltip content={<ChartTooltipContent />} />
           <Line
             type="monotone"
             dataKey={mode}
@@ -80,8 +97,11 @@ export default function StatsChart({ data, isCardio }: Props) {
             strokeWidth={2}
             dot={{ r: 3 }}
           />
-        </LineChart>
-      </ChartContainer>
+        </ScrollableTimeChart>
+      )}
+      {scrollable && (
+        <div className="small-muted" style={{ fontSize: '0.75rem' }}>← 横にスライドすると過去の記録を見られます。</div>
+      )}
 
       <div className="row" style={{ marginTop: '0.75rem', marginBottom: 0 }}>
         {modes.map((key) => (
