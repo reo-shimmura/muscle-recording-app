@@ -8,6 +8,7 @@ import ScrollableTimeChart from '../charts/ScrollableTimeChart';
 import { getRangeDays, type DailyStat, type RangeKey } from '../../lib/detailsStats';
 import { axisSpanDays, buildTimeAxis, parseLocalDate } from '../../lib/chartTimeAxis';
 import { toDateStr } from '../../lib/goalsProgress';
+import { COLORS } from '../../constants/colors';
 
 interface Props {
   data: DailyStat[];
@@ -21,18 +22,18 @@ const STRENGTH_MODES: StrengthMode[] = ['totalVolume', 'dailyVolume', 'maxWeight
 const CARDIO_MODES: CardioMode[] = ['totalDurationMinutes', 'durationMinutes', 'maxDurationMinutes', 'sessionCount'];
 
 const STRENGTH_CONFIG: ChartConfig = {
-  totalVolume: { label: '総負荷量', color: '#3b82f6' },
-  dailyVolume: { label: '日別負荷量', color: '#6366f1' },
-  maxWeight: { label: '最大重量', color: '#10b981' },
-  estimatedOneRepMax: { label: '推定1RM', color: '#ef4444' },
-  setCount: { label: 'セット数', color: '#f59e0b' },
+  totalVolume: { label: '総負荷量', color: COLORS.primary },
+  dailyVolume: { label: '日別負荷量', color: COLORS.primarySoft },
+  maxWeight: { label: '最大重量', color: COLORS.success },
+  estimatedOneRepMax: { label: '推定1RM', color: COLORS.primaryDeep },
+  setCount: { label: 'セット数', color: COLORS.caution },
 };
 
 const CARDIO_CONFIG: ChartConfig = {
-  totalDurationMinutes: { label: '総時間 (分)', color: '#3b82f6' },
-  durationMinutes: { label: '日別時間 (分)', color: '#6366f1' },
-  maxDurationMinutes: { label: '最大時間 (分)', color: '#10b981' },
-  sessionCount: { label: '実施回数', color: '#f59e0b' },
+  totalDurationMinutes: { label: '総時間 (分)', color: COLORS.primary },
+  durationMinutes: { label: '日別時間 (分)', color: COLORS.primarySoft },
+  maxDurationMinutes: { label: '最大時間 (分)', color: COLORS.success },
+  sessionCount: { label: '実施回数', color: COLORS.caution },
 };
 
 const RANGE_OPTIONS: { key: RangeKey; label: string }[] = [

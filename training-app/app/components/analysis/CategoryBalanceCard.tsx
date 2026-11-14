@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
 import OptionButtons from './OptionButtons';
 import type { CategoryBalance } from '../../lib/analysis/categoryBalance';
+import { COLORS } from '../../constants/colors';
+import Icon from '../Icon';
 
 interface Props {
   balances: CategoryBalance[];
@@ -20,9 +22,9 @@ const METRIC_OPTIONS: { key: Metric; label: string }[] = [
 ];
 
 const CHART_CONFIG: ChartConfig = {
-  volume: { label: '負荷量 (kg)', color: '#3b82f6' },
-  sets: { label: 'セット数', color: '#f59e0b' },
-  days: { label: '日数', color: '#10b981' },
+  volume: { label: '負荷量 (kg)', color: COLORS.primary },
+  sets: { label: 'セット数', color: COLORS.caution },
+  days: { label: '日数', color: COLORS.success },
 };
 
 /** 全体に占める割合（%、小数第1位まで） */
@@ -38,7 +40,7 @@ export default function CategoryBalanceCard({ balances }: Props) {
   return (
     <Card className="mb-4">
       <CardHeader>
-        <CardTitle>⚖️ 部位別バランス</CardTitle>
+        <CardTitle><Icon name="balance" />部位別バランス</CardTitle>
       </CardHeader>
       <CardContent>
         <OptionButtons options={METRIC_OPTIONS} selected={metric} onSelect={setMetric} />
@@ -59,13 +61,13 @@ export default function CategoryBalanceCard({ balances }: Props) {
 
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem 0.75rem', fontSize: '0.875rem' }}>
               {balances.map((b) => (
-                <span key={b.category} style={{ color: b[metric] === 0 ? '#dc2626' : undefined }}>
+                <span key={b.category} style={{ color: b[metric] === 0 ? COLORS.warning : undefined }}>
                   {b.category} {shareOf(b[metric], total)}
                 </span>
               ))}
             </div>
             <div className="small-muted" style={{ fontSize: '0.75rem', marginTop: '0.25rem' }}>
-              赤字はこの期間に一度も鍛えていない部位です。有酸素は含みません。
+              オレンジはこの期間に一度も鍛えていない部位です。有酸素は含みません。
             </div>
           </>
         )}

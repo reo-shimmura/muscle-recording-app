@@ -4,6 +4,7 @@ import { Progress } from '@/components/ui/progress';
 import GoalForm from './GoalForm';
 import { calcLongTermGoalProgress } from '../../lib/goalsProgress';
 import type { LongTermGoal, GoalMetric, TrainingRecord } from '../../types';
+import Icon from '../Icon';
 
 interface Props {
   goals: LongTermGoal[];
@@ -23,7 +24,7 @@ const METRIC_LABELS: Record<GoalMetric, string> = {
 export default function LongTermGoalSection({ goals, records, allExercisesFlat, onAdd, onDelete }: Props) {
   return (
     <div>
-      <h4>🏆 長期目標</h4>
+      <h4><Icon name="trophy" />長期目標</h4>
       <p className="small-muted">最終的に達成したい目標を種目ごとに設定します。</p>
       <GoalForm onAdd={onAdd} exercises={allExercisesFlat} />
 

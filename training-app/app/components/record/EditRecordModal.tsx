@@ -170,7 +170,7 @@ export default function EditRecordModal({
               キャンセル
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? <span className="spinner"></span> : '✅'} 保存
+              {loading && <span className="spinner"></span>} 保存
             </Button>
           </div>
         </form>

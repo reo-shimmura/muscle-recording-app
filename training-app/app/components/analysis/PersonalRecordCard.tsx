@@ -1,5 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { RECENT_PR_DAYS, type PersonalRecord } from '../../lib/analysis/personalRecords';
+import { COLORS } from '../../constants/colors';
+import Icon from '../Icon';
 
 interface Props {
   personalRecords: PersonalRecord[];
@@ -10,7 +12,7 @@ export default function PersonalRecordCard({ personalRecords }: Props) {
   return (
     <Card className="mb-4">
       <CardHeader>
-        <CardTitle>🏅 自己ベスト</CardTitle>
+        <CardTitle><Icon name="medal" />自己ベスト</CardTitle>
       </CardHeader>
       <CardContent>
         {personalRecords.length === 0 ? (
@@ -21,7 +23,7 @@ export default function PersonalRecordCard({ personalRecords }: Props) {
               <div
                 key={pr.exercise}
                 style={{
-                  borderLeft: `4px solid ${pr.isRecent ? '#f59e0b' : 'var(--border, #e5e7eb)'}`,
+                  borderLeft: `4px solid ${pr.isRecent ? COLORS.caution : 'var(--border, #e5e7eb)'}`,
                   padding: '0.25rem 0 0.25rem 0.75rem',
                   marginBottom: '0.5rem',
                 }}
@@ -30,7 +32,7 @@ export default function PersonalRecordCard({ personalRecords }: Props) {
                   {pr.exercise}
                   <span className="small-muted" style={{ fontWeight: 400 }}>{'　'}{pr.category}</span>
                   {pr.isRecent && (
-                    <span style={{ marginLeft: '0.5rem', fontSize: '0.75rem', color: '#b45309', fontWeight: 700 }}>NEW</span>
+                    <span style={{ marginLeft: '0.5rem', fontSize: '0.75rem', color: COLORS.cautionText, fontWeight: 700 }}>NEW</span>
                   )}
                 </div>
                 <div style={{ fontSize: '0.875rem' }}>

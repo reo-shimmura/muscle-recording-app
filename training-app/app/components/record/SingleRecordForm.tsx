@@ -5,6 +5,7 @@ import ExerciseSelect from './ExerciseSelect';
 import WorkoutSetList from './WorkoutSetList';
 import { buildExerciseCategoryMap, CARDIO_CATEGORY } from '../../constants/exercises';
 import type { CustomExercise, TrainingRecord, AlertMessage } from '../../types';
+import Icon from '../Icon';
 
 interface Props {
   customExercises: string[];
@@ -153,7 +154,7 @@ export default function SingleRecordForm({
 
       <div className="element-container">
         <Button type="submit" disabled={loading}>
-          {loading ? <span className="spinner"></span> : '✨'} 記録する
+          {loading ? <span className="spinner"></span> : <Icon name="star" color="currentColor" />}記録する
         </Button>
       </div>
     </form>

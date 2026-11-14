@@ -8,6 +8,8 @@ import { calcMotivation, WARNING_THRESHOLD, type MotivationStatus } from '../../
 import { axisSpanDays, buildTimeAxis } from '../../lib/chartTimeAxis';
 import { toDateStr } from '../../lib/goalsProgress';
 import type { TrainingRecord } from '../../types';
+import { COLORS } from '../../constants/colors';
+import Icon from '../Icon';
 
 interface Props {
   records: TrainingRecord[];
@@ -17,13 +19,13 @@ interface Props {
 const VISIBLE_DAYS = 60;
 
 const CHART_CONFIG: ChartConfig = {
-  level: { label: 'モチベーション', color: '#6366f1' },
+  level: { label: 'モチベーション', color: COLORS.primary },
 };
 
 const STATUS_VIEW: Record<MotivationStatus, { label: string; color: string; message: string }> = {
-  good: { label: '好調', color: '#10b981', message: 'いいペースで続いています！' },
-  steady: { label: '維持', color: '#f59e0b', message: 'この調子をキープしましょう。' },
-  warning: { label: '要注意', color: '#ef4444', message: '少し間が空いています。軽めでも1回やってみましょう。' },
+  good: { label: '好調', color: COLORS.success, message: 'いいペースで続いています！' },
+  steady: { label: '維持', color: COLORS.caution, message: 'この調子をキープしましょう。' },
+  warning: { label: '要注意', color: COLORS.warning, message: '少し間が空いています。軽めでも1回やってみましょう。' },
 };
 
 /** ホーム画面：忘却曲線のような形で、トレーニングの継続度（モチベーション）を表示する */
@@ -40,7 +42,7 @@ export default function MotivationCard({ records }: Props) {
   if (!result || !axis) {
     return (
       <div className="element-container">
-        <h4>📈 モチベーション</h4>
+        <h4><Icon name="chart-up" />モチベーション</h4>
         <div className="small-muted">トレーニングを記録すると、継続度の推移がここに表示されます。</div>
       </div>
     );
@@ -51,7 +53,7 @@ export default function MotivationCard({ records }: Props) {
 
   return (
     <div className="element-container">
-      <h4>📈 モチベーション</h4>
+      <h4><Icon name="chart-up" />モチベーション</h4>
 
       <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.75rem', flexWrap: 'wrap' }}>
         <span style={{ fontSize: '2.25rem', fontWeight: 800, color: view.color, lineHeight: 1 }}>
@@ -75,7 +77,7 @@ export default function MotivationCard({ records }: Props) {
         heightClass="h-[200px]"
       >
         <CartesianGrid strokeDasharray="3 3" vertical={false} />
-        <ReferenceLine y={WARNING_THRESHOLD} stroke="#ef4444" strokeDasharray="4 4" />
+        <ReferenceLine y={WARNING_THRESHOLD} stroke={COLORS.warning} strokeDasharray="4 4" />
         {/* monotone 補間で滑らかにつなぐ（値の行き過ぎが起きず、100超えや不自然な凹みが出ない） */}
         <Area
           type="monotone"

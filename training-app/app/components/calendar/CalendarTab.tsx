@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import CalendarGrid from './CalendarGrid';
 import type { TrainingRecord } from '../../types';
+import Icon from '../Icon';
 
 interface Props {
   records: TrainingRecord[];
@@ -31,7 +32,7 @@ export default function CalendarTab({ records }: Props) {
 
   return (
     <div>
-      <h3>📅 トレーニングカレンダー</h3>
+      <h3><Icon name="calendar" />トレーニングカレンダー</h3>
       <CalendarGrid
         records={records}
         currentMonth={currentMonth}
@@ -47,7 +48,7 @@ export default function CalendarTab({ records }: Props) {
       <Dialog open={!!selectedDate} onOpenChange={(open) => { if (!open) setSelectedDate(null); }}>
         <DialogContent className="sm:max-w-md max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>📋 {selectedDate} のトレーニング内容</DialogTitle>
+            <DialogTitle><Icon name="training-log" />{selectedDate} のトレーニング内容</DialogTitle>
           </DialogHeader>
           {selectedRecords.length === 0 ? (
             <div className="small-muted">この日のトレーニング記録はありません。</div>

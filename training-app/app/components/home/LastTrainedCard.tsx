@@ -5,6 +5,8 @@ import { calcLastTrainedByCategory } from '../../lib/analysis/lastTrained';
 import { toDateStr } from '../../lib/goalsProgress';
 import { DEFAULT_EXERCISES } from '../../constants/exercises';
 import type { TrainingRecord } from '../../types';
+import { COLORS, warningAlpha } from '../../constants/colors';
+import Icon from '../Icon';
 
 interface Props {
   records: TrainingRecord[];
@@ -32,9 +34,9 @@ export default function LastTrainedCard({ records, categoryMap }: Props) {
 
   return (
     <div className="element-container">
-      <h4>🧭 部位ごとの最終実施日</h4>
+      <h4><Icon name="compass" />部位ごとの最終実施日</h4>
       <div className="small-muted" style={{ marginBottom: '0.5rem' }}>
-        空いている順に表示しています（{ALERT_DAYS}日以上は赤）。
+        空いている順に表示しています（{ALERT_DAYS}日以上はオレンジ）。
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(96px, 1fr))', gap: '0.5rem' }}>
         {items.map(({ category, daysAgo }) => {
@@ -43,15 +45,15 @@ export default function LastTrainedCard({ records, categoryMap }: Props) {
             <div
               key={category}
               style={{
-                border: `1px solid ${alert ? '#fca5a5' : 'var(--border, #e5e7eb)'}`,
-                background: alert ? 'rgba(239, 68, 68, 0.08)' : undefined,
+                border: `1px solid ${alert ? COLORS.warningBorder : 'var(--border, #e5e7eb)'}`,
+                background: alert ? warningAlpha(0.08) : undefined,
                 borderRadius: 8,
                 padding: '0.5rem',
                 textAlign: 'center',
               }}
             >
               <div style={{ fontWeight: 700 }}>{category}</div>
-              <div style={{ color: alert ? '#dc2626' : undefined, fontSize: '0.875rem' }}>{daysLabel(daysAgo)}</div>
+              <div style={{ color: alert ? COLORS.warning : undefined, fontSize: '0.875rem' }}>{daysLabel(daysAgo)}</div>
             </div>
           );
         })}

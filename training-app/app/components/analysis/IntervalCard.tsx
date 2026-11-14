@@ -6,13 +6,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
 import { bucketIntervals, calcIntervals, summarizeIntervals } from '../../lib/analysis/intervals';
 import type { TrainingRecord } from '../../types';
+import { COLORS } from '../../constants/colors';
+import Icon from '../Icon';
 
 interface Props {
   records: TrainingRecord[];
 }
 
 const CHART_CONFIG: ChartConfig = {
-  count: { label: '回数', color: '#6366f1' },
+  count: { label: '回数', color: COLORS.primary },
 };
 
 /** 3. 記録の間隔の分布：前回から何日空けて記録しているかの回数を棒グラフで見せる */
@@ -24,7 +26,7 @@ export default function IntervalCard({ records }: Props) {
   return (
     <Card className="mb-4">
       <CardHeader>
-        <CardTitle>⏱️ 記録の間隔</CardTitle>
+        <CardTitle><Icon name="stopwatch" />記録の間隔</CardTitle>
       </CardHeader>
       <CardContent>
         {intervals.length === 0 ? (

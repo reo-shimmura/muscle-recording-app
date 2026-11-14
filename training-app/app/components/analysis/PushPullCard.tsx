@@ -1,17 +1,20 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PULL_CATEGORIES, PUSH_CATEGORIES, type PushPullBalance, type PushPullVerdict } from '../../lib/analysis/categoryBalance';
+import { COLORS } from '../../constants/colors';
+import Icon from '../Icon';
 
 interface Props {
   balance: PushPullBalance;
 }
 
-const PUSH_COLOR = '#ef4444';
-const PULL_COLOR = '#3b82f6';
+const PUSH_COLOR = COLORS.primary;
+// 押す（テーマの赤）と対比させるため、引くは青にする
+const PULL_COLOR = COLORS.contrast;
 
 const VERDICT_VIEW: Record<PushPullVerdict, { label: string; message: string; color?: string }> = {
-  balanced: { label: '良好', message: '押す・引くのバランスがとれています。', color: '#10b981' },
-  'push-heavy': { label: '押す種目に偏り', message: '背中（引く種目）を増やすと、姿勢や肩のケガ予防に役立ちます。', color: '#f59e0b' },
-  'pull-heavy': { label: '引く種目に偏り', message: '胸・肩（押す種目）も取り入れるとバランスがよくなります。', color: '#f59e0b' },
+  balanced: { label: '良好', message: '押す・引くのバランスがとれています。', color: COLORS.success },
+  'push-heavy': { label: '押す種目に偏り', message: '背中（引く種目）を増やすと、姿勢や肩のケガ予防に役立ちます。', color: COLORS.caution },
+  'pull-heavy': { label: '引く種目に偏り', message: '胸・肩（押す種目）も取り入れるとバランスがよくなります。', color: COLORS.caution },
   insufficient: { label: 'データ不足', message: 'この期間に胸・肩・背中の記録がありません。' },
 };
 
@@ -25,7 +28,7 @@ export default function PushPullCard({ balance }: Props) {
   return (
     <Card className="mb-4">
       <CardHeader>
-        <CardTitle>🔁 押す・引くのバランス</CardTitle>
+        <CardTitle><Icon name="cycle" />押す・引くのバランス</CardTitle>
       </CardHeader>
       <CardContent>
         <div style={{ marginBottom: '0.5rem' }}>

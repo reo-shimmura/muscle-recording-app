@@ -25,8 +25,8 @@ const ENTRY_MODE_TABS = [
 ];
 
 const SET_MODE_TABS = [
-  { id: 'apply', label: '🎯 セット一括記録' },
-  { id: 'create', label: '➕ 新規セット作成' },
+  { id: 'apply', label: 'セット一括記録', icon: 'lifter' as const },
+  { id: 'create', label: '新規セット作成', icon: 'pencil' as const },
 ];
 
 /** 記録追加タブ：単体登録とセット登録のモード切替を管理 */

@@ -1,8 +1,10 @@
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import Icon, { type IconName } from './Icon';
 
 interface Tab {
   id: string;
   label: string;
+  icon?: IconName;
 }
 
 interface Props {
@@ -18,6 +20,7 @@ export default function TabNav({ tabs, activeTab, onTabChange }: Props) {
       <TabsList variant="line" className="w-full justify-start overflow-x-auto">
         {tabs.map((tab) => (
           <TabsTrigger key={tab.id} value={tab.id}>
+            {tab.icon && <Icon name={tab.icon} color="currentColor" />}
             {tab.label}
           </TabsTrigger>
         ))}

@@ -16,6 +16,7 @@ export async function proxy(request: NextRequest) {
   return NextResponse.redirect(new URL('/login', request.url));
 }
 
+// 静的ファイル（画面のアイコン画像 /icons/ を含む）は認証の対象外にする
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|manifest.json|icon-192.png|icon-512.png).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|manifest.json|icon-192.png|icon-512.png|icons/).*)'],
 };

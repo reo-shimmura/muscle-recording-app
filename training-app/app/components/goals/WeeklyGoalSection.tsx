@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { calcWeeklyGoalProgress } from '../../lib/goalsProgress';
 import type { FrequencyGoal, TrainingRecord } from '../../types';
+import Icon from '../Icon';
 
 interface Props {
   weeklyGoal: FrequencyGoal | null;
@@ -24,7 +25,7 @@ export default function WeeklyGoalSection({ weeklyGoal, records, onSave }: Props
 
   return (
     <div>
-      <h4>📆 週間目標</h4>
+      <h4><Icon name="calendar-training" />週間目標</h4>
       <p className="small-muted">1週間（月〜日）のうち何回筋トレに行くかを設定します。</p>
 
       <form onSubmit={handleSubmit} className="element-container">
@@ -41,7 +42,7 @@ export default function WeeklyGoalSection({ weeklyGoal, records, onSave }: Props
             />
           </div>
         </div>
-        <Button type="submit" className="mt-4">🎯 週間目標を設定する</Button>
+        <Button type="submit" className="mt-4"><Icon name="target" color="currentColor" />週間目標を設定する</Button>
       </form>
 
       {progress && (
