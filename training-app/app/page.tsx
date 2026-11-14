@@ -18,13 +18,14 @@ import { useBodyWeights } from './hooks/useBodyWeights';
 import { DEFAULT_EXERCISES, DEFAULT_EXERCISE_SET } from './constants/exercises';
 import type { CustomExercise, TrainingRecord, AlertMessage as AlertMessageType } from './types';
 import type { IconName } from './components/Icon';
+import { NAV_COLORS } from './constants/colors';
 
-const MAIN_TABS: { id: string; label: string; icon: IconName }[] = [
-  { id: 'home', label: 'ホーム', icon: 'home' },
-  { id: 'write', label: '記録追加', icon: 'pencil' },
-  { id: 'goals', label: '目標管理', icon: 'target' },
-  { id: 'calendar', label: 'カレンダー', icon: 'calendar' },
-  { id: 'details', label: '統計・詳細', icon: 'chart-up' },
+const MAIN_TABS: { id: string; label: string; icon: IconName; color: string }[] = [
+  { id: 'home', label: 'ホーム', icon: 'home', color: NAV_COLORS.home },
+  { id: 'write', label: '記録追加', icon: 'pencil', color: NAV_COLORS.write },
+  { id: 'goals', label: '目標管理', icon: 'target', color: NAV_COLORS.goals },
+  { id: 'calendar', label: 'カレンダー', icon: 'calendar', color: NAV_COLORS.calendar },
+  { id: 'details', label: '統計・詳細', icon: 'chart-up', color: NAV_COLORS.details },
 ];
 
 export default function Home() {

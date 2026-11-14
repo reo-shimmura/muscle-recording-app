@@ -37,6 +37,15 @@ export const COLORS = {
   barTrack: 'rgba(148, 163, 184, 0.2)',
 } as const;
 
+/** 下部ナビのタブごとの色（赤ベースに合う暖色を中心に、見分けやすい色を混ぜる） */
+export const NAV_COLORS = {
+  home: '#dc2626',
+  write: '#f97316',
+  goals: '#f59e0b',
+  calendar: '#10b981',
+  details: '#8b5cf6',
+} as const;
+
 /** 主色（#dc2626）を指定の不透明度で返す（ヒートマップ・カレンダーの濃淡用） */
 export function primaryAlpha(alpha: number): string {
   return `rgba(220, 38, 38, ${alpha})`;
