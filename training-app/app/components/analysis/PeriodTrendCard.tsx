@@ -9,6 +9,7 @@ import { summarizeByPeriod, type PeriodUnit } from '../../lib/analysis/periodSum
 import { changeRate } from '../../lib/analysis/common';
 import { toDateStr } from '../../lib/goalsProgress';
 import type { TrainingRecord } from '../../types';
+import { COLORS } from '../../constants/colors';
 
 interface Props {
   records: TrainingRecord[];
@@ -31,9 +32,9 @@ const METRIC_OPTIONS: { key: Metric; label: string }[] = [
 ];
 
 const CHART_CONFIG: ChartConfig = {
-  days: { label: '実施日数', color: '#10b981' },
-  volume: { label: '負荷量 (kg)', color: '#3b82f6' },
-  sets: { label: 'セット数', color: '#f59e0b' },
+  days: { label: '実施日数', color: COLORS.success },
+  volume: { label: '負荷量 (kg)', color: COLORS.primary },
+  sets: { label: 'セット数', color: COLORS.caution },
 };
 
 /** 増減率を「+12.5%」の形で表示する（比較できないときは「—」） */

@@ -5,6 +5,7 @@ import { CartesianGrid, Line, LineChart, XAxis, YAxis } from 'recharts';
 import { Button } from '@/components/ui/button';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
 import type { BodyWeight } from '../../types';
+import { COLORS } from '../../constants/colors';
 
 interface Props {
   bodyWeights: BodyWeight[];
@@ -14,7 +15,7 @@ interface Props {
 }
 
 const CHART_CONFIG: ChartConfig = {
-  weight_kg: { label: '体重 (kg)', color: '#8b5cf6' },
+  weight_kg: { label: '体重 (kg)', color: COLORS.bodyWeight },
 };
 
 // グラフが見やすくなるよう、直近30件（概ね1か月分）だけを表示する

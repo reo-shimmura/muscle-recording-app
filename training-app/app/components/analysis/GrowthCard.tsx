@@ -6,6 +6,7 @@ import OptionButtons from './OptionButtons';
 import { calcGrowth } from '../../lib/analysis/growth';
 import { toDateStr } from '../../lib/goalsProgress';
 import type { TrainingRecord } from '../../types';
+import { COLORS } from '../../constants/colors';
 
 interface Props {
   records: TrainingRecord[];
@@ -50,12 +51,12 @@ export default function GrowthCard({ records, categoryMap }: Props) {
                 <div key={g.exercise} style={{ marginBottom: '0.5rem' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
                     <span style={{ fontWeight: 700 }}>{g.exercise}</span>
-                    <span style={{ color: positive ? '#059669' : '#dc2626', fontWeight: 700 }}>
+                    <span style={{ color: positive ? COLORS.successText : COLORS.warning, fontWeight: 700 }}>
                       {positive ? '+' : ''}{g.rate}%
                     </span>
                   </div>
-                  <div style={{ height: 6, background: 'rgba(148, 163, 184, 0.2)', borderRadius: 3 }}>
-                    <div style={{ width: `${width}%`, height: '100%', borderRadius: 3, background: positive ? '#10b981' : '#ef4444' }} />
+                  <div style={{ height: 6, background: COLORS.barTrack, borderRadius: 3 }}>
+                    <div style={{ width: `${width}%`, height: '100%', borderRadius: 3, background: positive ? COLORS.success : COLORS.warningSoft }} />
                   </div>
                   <div className="small-muted" style={{ fontSize: '0.75rem' }}>
                     {g.past}kg → {g.recent}kg

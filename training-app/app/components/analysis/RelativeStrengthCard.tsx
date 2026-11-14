@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { RelativeStrengthResult } from '../../lib/analysis/bodyComposition';
+import { COLORS } from '../../constants/colors';
 
 interface Props {
   result: RelativeStrengthResult | null;
@@ -34,13 +35,13 @@ export default function RelativeStrengthCard({ result }: Props) {
                     <span className="small-muted">（推定1RM {item.oneRepMax}kg）</span>
                   </span>
                 </div>
-                <div style={{ height: 6, background: 'rgba(148, 163, 184, 0.2)', borderRadius: 3 }}>
+                <div style={{ height: 6, background: COLORS.barTrack, borderRadius: 3 }}>
                   <div
                     style={{
                       width: `${Math.min(100, (item.ratio / BAR_MAX_RATIO) * 100)}%`,
                       height: '100%',
                       borderRadius: 3,
-                      background: '#6366f1',
+                      background: COLORS.primary,
                     }}
                   />
                 </div>

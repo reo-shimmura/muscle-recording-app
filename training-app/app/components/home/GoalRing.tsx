@@ -1,4 +1,5 @@
 import { RadialBarChart, RadialBar, PolarAngleAxis } from 'recharts';
+import { COLORS } from '../../constants/colors';
 
 interface Props {
   label: string;
@@ -7,9 +8,9 @@ interface Props {
   size?: number;
 }
 
-const ACHIEVED_COLOR = '#10b981';
-const IN_PROGRESS_COLOR = '#3b82f6';
-const TRACK_COLOR = '#e5e7eb';
+const ACHIEVED_COLOR = COLORS.success;
+const IN_PROGRESS_COLOR = COLORS.primary;
+const TRACK_COLOR = COLORS.track;
 
 /** 目標の達成率をリング（ドーナツ）グラフで表示する */
 export default function GoalRing({ label, sublabel, percent, size = 112 }: Props) {

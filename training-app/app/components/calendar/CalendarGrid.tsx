@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button';
 import type { TrainingRecord } from '../../types';
+import { primaryAlpha } from '../../constants/colors';
 
 interface Props {
   records: TrainingRecord[];
@@ -13,11 +14,11 @@ interface Props {
 const MONTH_NAMES = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
 const DAY_NAMES = ['日', '月', '火', '水', '木', '金', '土'];
 
-// 実施種目数に応じたセル配色（いずれも濃くなりすぎないよう透明度を抑えている）
+// 実施種目数に応じたセル配色（テーマの赤の濃淡3段階。濃くなりすぎないよう透明度を抑えている）
 const RECORD_COLOR_TIERS = {
-  low: { base: 'rgba(59, 130, 246, 0.28)', hover: 'rgba(59, 130, 246, 0.4)', selected: 'rgba(59, 130, 246, 0.5)' }, // 1種目：青
-  mid: { base: 'rgba(34, 197, 94, 0.26)', hover: 'rgba(34, 197, 94, 0.38)', selected: 'rgba(34, 197, 94, 0.48)' }, // 2〜4種目：緑
-  high: { base: 'rgba(239, 68, 68, 0.28)', hover: 'rgba(239, 68, 68, 0.4)', selected: 'rgba(239, 68, 68, 0.5)' }, // 5種目以上：赤
+  low: { base: primaryAlpha(0.12), hover: primaryAlpha(0.2), selected: primaryAlpha(0.28) }, // 1種目：淡い赤
+  mid: { base: primaryAlpha(0.26), hover: primaryAlpha(0.36), selected: primaryAlpha(0.44) }, // 2〜4種目：中間の赤
+  high: { base: primaryAlpha(0.45), hover: primaryAlpha(0.55), selected: primaryAlpha(0.65) }, // 5種目以上：濃い赤
 } as const;
 
 function getRecordColorTier(count: number) {

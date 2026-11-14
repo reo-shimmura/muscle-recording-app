@@ -2,14 +2,15 @@ import { Bar, CartesianGrid, ComposedChart, Line, XAxis, YAxis } from 'recharts'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
 import type { WeeklyBodyStat } from '../../lib/analysis/bodyComposition';
+import { COLORS } from '../../constants/colors';
 
 interface Props {
   weeklyStats: WeeklyBodyStat[];
 }
 
 const CHART_CONFIG: ChartConfig = {
-  volume: { label: '負荷量 (kg)', color: '#93c5fd' },
-  bodyWeight: { label: '体重 (kg)', color: '#ef4444' },
+  volume: { label: '負荷量 (kg)', color: COLORS.primaryLight },
+  bodyWeight: { label: '体重 (kg)', color: COLORS.bodyWeight },
 };
 
 /** 10. 体重と負荷量の重ね合わせ：週ごとの負荷量（棒・左軸）と平均体重（折れ線・右軸） */

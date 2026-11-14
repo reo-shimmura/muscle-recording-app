@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { buildWeekdayHeatmap, countByWeekday, WEEKDAY_LABELS, type HeatLevel } from '../../lib/analysis/weekdayHeatmap';
 import { toDateStr } from '../../lib/goalsProgress';
 import type { TrainingRecord } from '../../types';
+import { COLORS, primaryAlpha } from '../../constants/colors';
 
 interface Props {
   records: TrainingRecord[];
@@ -16,10 +17,10 @@ const WEEKS = 16;
 // 濃さごとの色（0 は記録なし）
 const LEVEL_COLORS: Record<HeatLevel, string> = {
   0: 'rgba(148, 163, 184, 0.18)',
-  1: 'rgba(99, 102, 241, 0.3)',
-  2: 'rgba(99, 102, 241, 0.5)',
-  3: 'rgba(99, 102, 241, 0.75)',
-  4: 'rgba(99, 102, 241, 1)',
+  1: primaryAlpha(0.25),
+  2: primaryAlpha(0.45),
+  3: primaryAlpha(0.7),
+  4: primaryAlpha(1),
 };
 
 /** 2. 曜日別ヒートマップ：曜日×週のマスを負荷量の濃さで塗り、よくやる曜日・空きがちな曜日を見せる */
@@ -57,7 +58,7 @@ export default function WeekdayHeatmapCard({ records }: Props) {
                 aspectRatio: '1',
                 borderRadius: 3,
                 background: cell.future ? 'transparent' : LEVEL_COLORS[cell.level],
-                outline: cell.date === today ? '2px solid #6366f1' : undefined,
+                outline: cell.date === today ? `2px solid ${COLORS.primary}` : undefined,
               }}
             />
           ))}
@@ -71,7 +72,7 @@ export default function WeekdayHeatmapCard({ records }: Props) {
           {weekdayCounts.map((count, i) => (
             <div key={WEEKDAY_LABELS[i]}>
               <div className="small-muted" style={{ fontSize: '0.75rem' }}>{WEEKDAY_LABELS[i]}</div>
-              <div style={{ fontWeight: count === maxCount && count > 0 ? 800 : 400, color: count === 0 ? '#dc2626' : undefined }}>
+              <div style={{ fontWeight: count === maxCount && count > 0 ? 800 : 400, color: count === 0 ? COLORS.warning : undefined }}>
                 {count}
               </div>
             </div>
