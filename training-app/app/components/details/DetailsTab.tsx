@@ -10,13 +10,15 @@ import OptionButtons from '../analysis/OptionButtons';
 import ContinuityPanel from '../analysis/ContinuityPanel';
 import BalancePanel from '../analysis/BalancePanel';
 import GrowthPanel from '../analysis/GrowthPanel';
+import BodyPanel from '../analysis/BodyPanel';
 import { buildExerciseCategoryMap, CARDIO_CATEGORY, UNCATEGORIZED_LABEL } from '../../constants/exercises';
 import { aggregateDailyStats } from '../../lib/detailsStats';
 import { groupRecordsByExercise } from '../../lib/groupRecords';
-import type { TrainingRecord, CustomExercise } from '../../types';
+import type { TrainingRecord, CustomExercise, BodyWeight } from '../../types';
 
 interface Props {
   records: TrainingRecord[];
+  bodyWeights: BodyWeight[];
   customExercisesWithCategory: CustomExercise[];
   onEditRequest: (record: TrainingRecord) => void;
   onDeleteRequest: (id: number) => void;
@@ -24,7 +26,7 @@ interface Props {
 
 const ALL_VALUE = '';
 
-type Section = 'records' | 'continuity' | 'balance' | 'growth';
+type Section = 'records' | 'continuity' | 'balance' | 'growth' | 'body';
 
 // 統計タブ内のサブタブ（分析が増えて縦に長くなりすぎないよう、観点ごとに切り替える）
 const SECTION_OPTIONS: { key: Section; label: string }[] = [
@@ -32,10 +34,11 @@ const SECTION_OPTIONS: { key: Section; label: string }[] = [
   { key: 'continuity', label: '継続' },
   { key: 'balance', label: 'バランス' },
   { key: 'growth', label: '成長' },
+  { key: 'body', label: '体' },
 ];
 
 /** 記録詳細タブ：統計詳細（グラフ）と記録詳細（一覧）をブロックごとに分け、それぞれ独立したカテゴリ・種目フィルターを持つ */
-export default function DetailsTab({ records, customExercisesWithCategory, onEditRequest, onDeleteRequest }: Props) {
+export default function DetailsTab({ records, bodyWeights, customExercisesWithCategory, onEditRequest, onDeleteRequest }: Props) {
   const [section, setSection] = useState<Section>('records');
   const [statsCategory, setStatsCategory] = useState(ALL_VALUE);
   const [statsExercise, setStatsExercise] = useState(ALL_VALUE);
@@ -141,6 +144,7 @@ export default function DetailsTab({ records, customExercisesWithCategory, onEdi
       {section === 'continuity' && <ContinuityPanel records={records} />}
       {section === 'balance' && <BalancePanel records={records} categoryMap={categoryMap} />}
       {section === 'growth' && <GrowthPanel records={records} categoryMap={categoryMap} />}
+      {section === 'body' && <BodyPanel records={records} bodyWeights={bodyWeights} categoryMap={categoryMap} />}
 
       {section === 'records' && (
         <>
