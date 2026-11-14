@@ -221,6 +221,7 @@ export default function Home() {
           {tab === 'details' && (
             <DetailsTab
               records={records}
+              bodyWeights={bodyWeights}
               customExercisesWithCategory={customExercisesWithCategory}
               onEditRequest={setEditingRecord}
               onDeleteRequest={setDeleteConfirm}

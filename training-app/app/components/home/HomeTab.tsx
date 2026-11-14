@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import GoalRing from './GoalRing';
 import BodyWeightCard from './BodyWeightCard';
+import MotivationCard from './MotivationCard';
+import LastTrainedCard from './LastTrainedCard';
 import CalendarGrid from '../calendar/CalendarGrid';
 import { buildExerciseCategoryMap } from '../../constants/exercises';
 import { groupRecordsByExercise } from '../../lib/groupRecords';
@@ -80,6 +82,10 @@ export default function HomeTab({
   return (
     <div>
       <h3>🏠 ホーム</h3>
+
+      <MotivationCard records={records} />
+
+      <LastTrainedCard records={records} categoryMap={categoryMap} />
 
       <BodyWeightCard
         bodyWeights={bodyWeights}

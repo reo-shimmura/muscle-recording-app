@@ -71,12 +71,10 @@ const RANGE_DAYS: Record<Exclude<RangeKey, 'all'>, number> = {
   '3m': 90,
 };
 
-/** 累計値は保持したまま、指定した表示範囲（直近N日 or 全期間）にトリミングする */
-export function filterStatsByRange(stats: DailyStat[], range: RangeKey): DailyStat[] {
-  if (range === 'all') return stats;
-  const days = RANGE_DAYS[range];
-  const cutoff = new Date();
-  cutoff.setDate(cutoff.getDate() - (days - 1));
-  const cutoffDate = cutoff.toISOString().slice(0, 10);
-  return stats.filter((s) => s.date >= cutoffDate);
+/**
+ * グラフの1画面に見せる日数を返す。全期間（1画面に全体を収める）の場合は null。
+ * それより前の期間は横にスライドして見る。
+ */
+export function getRangeDays(range: RangeKey): number | null {
+  return range === 'all' ? null : RANGE_DAYS[range];
 }
