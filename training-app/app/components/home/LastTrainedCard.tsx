@@ -6,6 +6,7 @@ import { toDateStr } from '../../lib/goalsProgress';
 import { DEFAULT_EXERCISES } from '../../constants/exercises';
 import type { TrainingRecord } from '../../types';
 import { COLORS, warningAlpha } from '../../constants/colors';
+import Icon from '../Icon';
 
 interface Props {
   records: TrainingRecord[];
@@ -33,7 +34,7 @@ export default function LastTrainedCard({ records, categoryMap }: Props) {
 
   return (
     <div className="element-container">
-      <h4>🧭 部位ごとの最終実施日</h4>
+      <h4><Icon name="compass" />部位ごとの最終実施日</h4>
       <div className="small-muted" style={{ marginBottom: '0.5rem' }}>
         空いている順に表示しています（{ALERT_DAYS}日以上はオレンジ）。
       </div>

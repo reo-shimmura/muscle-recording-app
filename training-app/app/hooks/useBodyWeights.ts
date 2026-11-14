@@ -41,7 +41,7 @@ export function useBodyWeights(showMessage: (msg: AlertMessage) => void): UseBod
         if (!res.ok) throw new Error(`Save failed: ${res.status}`);
         const saved: BodyWeight = await res.json();
         setBodyWeights((prev) => [...prev.filter((b) => b.date !== saved.date), saved].sort((a, b) => a.date.localeCompare(b.date)));
-        showMessage({ type: 'success', text: '✅ 体重を記録しました！' });
+        showMessage({ type: 'success', text: '体重を記録しました！' });
         return true;
       } catch (err: unknown) {
         console.error('体重の保存に失敗:', err instanceof Error ? err.message : err);

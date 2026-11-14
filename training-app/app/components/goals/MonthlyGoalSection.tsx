@@ -5,6 +5,7 @@ import { Progress } from '@/components/ui/progress';
 import { DEFAULT_EXERCISES } from '../../constants/exercises';
 import { calcMonthlyGoalProgress } from '../../lib/goalsProgress';
 import type { FrequencyGoal, TrainingRecord } from '../../types';
+import Icon from '../Icon';
 
 interface Props {
   monthlyGoals: FrequencyGoal[];
@@ -41,7 +42,7 @@ export default function MonthlyGoalSection({ monthlyGoals, records, categoryMap,
 
   return (
     <div>
-      <h4>🗓️ 月間目標</h4>
+      <h4><Icon name="calendar" />月間目標</h4>
       <p className="small-muted">1か月のうち、カテゴリ（部位）ごとに何回筋トレに行くかを設定します。</p>
 
       <form onSubmit={handleSubmit} className="element-container">
@@ -60,7 +61,7 @@ export default function MonthlyGoalSection({ monthlyGoals, records, categoryMap,
             </div>
           ))}
         </div>
-        <Button type="submit" className="mt-4">🎯 月間目標をまとめて設定する</Button>
+        <Button type="submit" className="mt-4"><Icon name="target" color="currentColor" />月間目標をまとめて設定する</Button>
       </form>
 
       {monthlyGoals.length > 0 && (

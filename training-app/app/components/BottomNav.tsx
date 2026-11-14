@@ -1,7 +1,9 @@
+import Icon, { type IconName } from './Icon';
+
 interface Tab {
   id: string;
   label: string;
-  icon: string;
+  icon: IconName;
 }
 
 interface Props {
@@ -21,7 +23,9 @@ export default function BottomNav({ tabs, activeTab, onTabChange }: Props) {
           className={`bottom-nav-item${activeTab === tab.id ? ' active' : ''}`}
           onClick={() => onTabChange(tab.id)}
         >
-          <span className="bottom-nav-icon">{tab.icon}</span>
+          <span className="bottom-nav-icon">
+            <Icon name={tab.icon} size="1.4rem" color="currentColor" style={{ marginRight: 0 }} />
+          </span>
           <span className="bottom-nav-label">{tab.label}</span>
         </button>
       ))}

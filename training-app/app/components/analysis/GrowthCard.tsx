@@ -7,6 +7,7 @@ import { calcGrowth } from '../../lib/analysis/growth';
 import { toDateStr } from '../../lib/goalsProgress';
 import type { TrainingRecord } from '../../types';
 import { COLORS } from '../../constants/colors';
+import Icon from '../Icon';
 
 interface Props {
   records: TrainingRecord[];
@@ -35,7 +36,7 @@ export default function GrowthCard({ records, categoryMap }: Props) {
   return (
     <Card className="mb-4">
       <CardHeader>
-        <CardTitle>📈 伸び率（推定1RM）</CardTitle>
+        <CardTitle><Icon name="chart-up" />伸び率（推定1RM）</CardTitle>
       </CardHeader>
       <CardContent>
         <OptionButtons options={SPAN_OPTIONS} selected={span} onSelect={setSpan} />

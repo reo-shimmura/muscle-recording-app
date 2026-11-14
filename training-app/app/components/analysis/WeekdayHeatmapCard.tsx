@@ -6,6 +6,7 @@ import { buildWeekdayHeatmap, countByWeekday, WEEKDAY_LABELS, type HeatLevel } f
 import { toDateStr } from '../../lib/goalsProgress';
 import type { TrainingRecord } from '../../types';
 import { COLORS, primaryAlpha } from '../../constants/colors';
+import Icon from '../Icon';
 
 interface Props {
   records: TrainingRecord[];
@@ -33,7 +34,7 @@ export default function WeekdayHeatmapCard({ records }: Props) {
   return (
     <Card className="mb-4">
       <CardHeader>
-        <CardTitle>🟩 曜日別ヒートマップ</CardTitle>
+        <CardTitle><Icon name="daily-calendar" />曜日別ヒートマップ</CardTitle>
       </CardHeader>
       <CardContent>
         <div

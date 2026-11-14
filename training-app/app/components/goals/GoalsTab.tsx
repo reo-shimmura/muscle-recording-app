@@ -4,6 +4,7 @@ import WeeklyGoalSection from './WeeklyGoalSection';
 import MonthlyGoalSection from './MonthlyGoalSection';
 import { buildExerciseCategoryMap } from '../../constants/exercises';
 import type { LongTermGoal, FrequencyGoal, GoalMetric, TrainingRecord, CustomExercise } from '../../types';
+import Icon from '../Icon';
 
 interface Props {
   longTermGoals: LongTermGoal[];
@@ -38,7 +39,7 @@ export default function GoalsTab({
 
   return (
     <div>
-      <h3>🎯 目標管理</h3>
+      <h3><Icon name="target" />目標管理</h3>
 
       <LongTermGoalSection
         goals={longTermGoals}

@@ -17,13 +17,14 @@ import { useGoals } from './hooks/useGoals';
 import { useBodyWeights } from './hooks/useBodyWeights';
 import { DEFAULT_EXERCISES, DEFAULT_EXERCISE_SET } from './constants/exercises';
 import type { CustomExercise, TrainingRecord, AlertMessage as AlertMessageType } from './types';
+import type { IconName } from './components/Icon';
 
-const MAIN_TABS = [
-  { id: 'home', label: 'ホーム', icon: '🏠' },
-  { id: 'write', label: '記録追加', icon: '📝' },
-  { id: 'goals', label: '目標管理', icon: '🎯' },
-  { id: 'calendar', label: 'カレンダー', icon: '📅' },
-  { id: 'details', label: '統計・詳細', icon: '📊' },
+const MAIN_TABS: { id: string; label: string; icon: IconName }[] = [
+  { id: 'home', label: 'ホーム', icon: 'home' },
+  { id: 'write', label: '記録追加', icon: 'pencil' },
+  { id: 'goals', label: '目標管理', icon: 'target' },
+  { id: 'calendar', label: 'カレンダー', icon: 'calendar' },
+  { id: 'details', label: '統計・詳細', icon: 'chart-up' },
 ];
 
 export default function Home() {
@@ -99,7 +100,7 @@ export default function Home() {
       if (!res.ok) throw new Error(`Save failed: ${res.status}`);
       const data: TrainingRecord[] = await res.json();
       setRecords((prev) => [...data, ...prev]);
-      showMessage({ type: 'success', text: `✅ ${payloads.length}セットを記録しました！` });
+      showMessage({ type: 'success', text: `${payloads.length}セットを記録しました！` });
       setTab('details');
       return true;
     } catch (err: unknown) {

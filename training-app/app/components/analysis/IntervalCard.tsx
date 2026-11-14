@@ -7,6 +7,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } f
 import { bucketIntervals, calcIntervals, summarizeIntervals } from '../../lib/analysis/intervals';
 import type { TrainingRecord } from '../../types';
 import { COLORS } from '../../constants/colors';
+import Icon from '../Icon';
 
 interface Props {
   records: TrainingRecord[];
@@ -25,7 +26,7 @@ export default function IntervalCard({ records }: Props) {
   return (
     <Card className="mb-4">
       <CardHeader>
-        <CardTitle>⏱️ 記録の間隔</CardTitle>
+        <CardTitle><Icon name="stopwatch" />記録の間隔</CardTitle>
       </CardHeader>
       <CardContent>
         {intervals.length === 0 ? (

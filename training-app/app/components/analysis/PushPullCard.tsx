@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PULL_CATEGORIES, PUSH_CATEGORIES, type PushPullBalance, type PushPullVerdict } from '../../lib/analysis/categoryBalance';
 import { COLORS } from '../../constants/colors';
+import Icon from '../Icon';
 
 interface Props {
   balance: PushPullBalance;
@@ -27,7 +28,7 @@ export default function PushPullCard({ balance }: Props) {
   return (
     <Card className="mb-4">
       <CardHeader>
-        <CardTitle>🔁 押す・引くのバランス</CardTitle>
+        <CardTitle><Icon name="cycle" />押す・引くのバランス</CardTitle>
       </CardHeader>
       <CardContent>
         <div style={{ marginBottom: '0.5rem' }}>

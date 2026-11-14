@@ -16,6 +16,7 @@ import {
 } from '../../lib/goalsProgress';
 import { calcWeeklyGoalStreak } from '../../lib/streak';
 import type { LongTermGoal, FrequencyGoal, TrainingRecord, CustomExercise, BodyWeight } from '../../types';
+import Icon from '../Icon';
 
 interface Props {
   longTermGoals: LongTermGoal[];
@@ -81,7 +82,7 @@ export default function HomeTab({
 
   return (
     <div>
-      <h3>🏠 ホーム</h3>
+      <h3><Icon name="home" />ホーム</h3>
 
       <MotivationCard records={records} />
 
@@ -95,7 +96,7 @@ export default function HomeTab({
       />
 
       <div className="element-container">
-        <h4>📅 カレンダー</h4>
+        <h4><Icon name="calendar" />カレンダー</h4>
         <CalendarGrid
           records={records}
           currentMonth={currentMonth}
@@ -111,7 +112,7 @@ export default function HomeTab({
         <Dialog open={!!selectedDate} onOpenChange={(open) => { if (!open) setSelectedDate(null); }}>
           <DialogContent className="sm:max-w-md max-h-[80vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>📋 {selectedDate} のトレーニング内容</DialogTitle>
+              <DialogTitle><Icon name="training-log" />{selectedDate} のトレーニング内容</DialogTitle>
             </DialogHeader>
             {selectedDateRecords.length === 0 ? (
               <div className="small-muted">この日のトレーニング記録はありません。</div>
@@ -139,7 +140,7 @@ export default function HomeTab({
 
       {weeklyGoalStreak > 0 && (
         <div className="element-container">
-          <div className="alert alert-success">🔥 週間目標 {weeklyGoalStreak}週連続達成中！</div>
+          <div className="alert alert-success"><Icon name="flame" color="var(--warning)" />週間目標 {weeklyGoalStreak}週連続達成中！</div>
         </div>
       )}
 
@@ -148,13 +149,13 @@ export default function HomeTab({
           <div className="alert alert-info">
             まだ目標が設定されていません。「目標管理」タブから長期・週間・月間の目標を設定しましょう。
           </div>
-          <Button onClick={onNavigateToGoals}>🎯 目標を設定する</Button>
+          <Button onClick={onNavigateToGoals}><Icon name="target" color="currentColor" />目標を設定する</Button>
         </div>
       )}
 
       {weeklyProgress && (
         <div className="element-container">
-          <h4>📆 週間目標</h4>
+          <h4><Icon name="calendar-training" />週間目標</h4>
           <div className="row" style={{ justifyContent: 'center' }}>
             <GoalRing
               label="今週の実施"
@@ -168,7 +169,7 @@ export default function HomeTab({
 
       {longTermHighlights.length > 0 && (
         <div className="element-container">
-          <h4>🏆 長期目標</h4>
+          <h4><Icon name="trophy" />長期目標</h4>
           <div className="row" style={{ flexWrap: 'wrap', justifyContent: 'center' }}>
             {longTermHighlights.map(({ goal, progress }) => (
               <GoalRing
@@ -184,7 +185,7 @@ export default function HomeTab({
 
       {monthlyProgressList.length > 0 && (
         <div className="element-container">
-          <h4>🗓️ 月間目標</h4>
+          <h4><Icon name="calendar" />月間目標</h4>
           <div className="row" style={{ flexWrap: 'wrap', justifyContent: 'center' }}>
             {monthlyProgressList.map(({ goal, progress }) => (
               <GoalRing

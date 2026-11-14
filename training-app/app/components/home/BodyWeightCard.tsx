@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
 import type { BodyWeight } from '../../types';
 import { COLORS } from '../../constants/colors';
+import Icon from '../Icon';
 
 interface Props {
   bodyWeights: BodyWeight[];
@@ -52,7 +53,7 @@ export default function BodyWeightCard({ bodyWeights, loading, onSave, onDelete 
 
   return (
     <div className="element-container">
-      <h4>⚖️ 体重</h4>
+      <h4><Icon name="scale" />体重</h4>
 
       {latest && (
         <div className="row" style={{ alignItems: 'baseline', gap: '0.5rem' }}>

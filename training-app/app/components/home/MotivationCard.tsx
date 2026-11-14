@@ -9,6 +9,7 @@ import { axisSpanDays, buildTimeAxis } from '../../lib/chartTimeAxis';
 import { toDateStr } from '../../lib/goalsProgress';
 import type { TrainingRecord } from '../../types';
 import { COLORS } from '../../constants/colors';
+import Icon from '../Icon';
 
 interface Props {
   records: TrainingRecord[];
@@ -41,7 +42,7 @@ export default function MotivationCard({ records }: Props) {
   if (!result || !axis) {
     return (
       <div className="element-container">
-        <h4>📈 モチベーション</h4>
+        <h4><Icon name="chart-up" />モチベーション</h4>
         <div className="small-muted">トレーニングを記録すると、継続度の推移がここに表示されます。</div>
       </div>
     );
@@ -52,7 +53,7 @@ export default function MotivationCard({ records }: Props) {
 
   return (
     <div className="element-container">
-      <h4>📈 モチベーション</h4>
+      <h4><Icon name="chart-up" />モチベーション</h4>
 
       <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.75rem', flexWrap: 'wrap' }}>
         <span style={{ fontSize: '2.25rem', fontWeight: 800, color: view.color, lineHeight: 1 }}>

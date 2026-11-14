@@ -7,6 +7,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } f
 import OptionButtons from './OptionButtons';
 import type { CategoryBalance } from '../../lib/analysis/categoryBalance';
 import { COLORS } from '../../constants/colors';
+import Icon from '../Icon';
 
 interface Props {
   balances: CategoryBalance[];
@@ -39,7 +40,7 @@ export default function CategoryBalanceCard({ balances }: Props) {
   return (
     <Card className="mb-4">
       <CardHeader>
-        <CardTitle>⚖️ 部位別バランス</CardTitle>
+        <CardTitle><Icon name="balance" />部位別バランス</CardTitle>
       </CardHeader>
       <CardContent>
         <OptionButtons options={METRIC_OPTIONS} selected={metric} onSelect={setMetric} />

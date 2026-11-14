@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { RelativeStrengthResult } from '../../lib/analysis/bodyComposition';
 import { COLORS } from '../../constants/colors';
+import Icon from '../Icon';
 
 interface Props {
   result: RelativeStrengthResult | null;
@@ -14,7 +15,7 @@ export default function RelativeStrengthCard({ result }: Props) {
   return (
     <Card className="mb-4">
       <CardHeader>
-        <CardTitle>💪 体重あたりの挙上重量</CardTitle>
+        <CardTitle><Icon name="muscle" />体重あたりの挙上重量</CardTitle>
       </CardHeader>
       <CardContent>
         {result === null ? (

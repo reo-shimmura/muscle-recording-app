@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { GoalMetric } from '../../types';
+import Icon from '../Icon';
 
 interface Props {
   exercises: string[];
@@ -74,7 +75,7 @@ export default function GoalForm({ exercises, onAdd }: Props) {
         </div>
       </div>
       <Button type="submit" className="mt-4">
-        🎯 長期目標を設定する
+        <Icon name="target" color="currentColor" />長期目標を設定する
       </Button>
     </form>
   );

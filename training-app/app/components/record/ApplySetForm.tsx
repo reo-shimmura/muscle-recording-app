@@ -3,6 +3,7 @@ import SetDraftItem from './SetDraftItem';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { WorkoutSetItem, WorkoutSetTemplate, TrainingRecord, AlertMessage } from '../../types';
+import Icon from '../Icon';
 
 interface Props {
   setTemplates: WorkoutSetTemplate[];
@@ -101,7 +102,7 @@ export default function ApplySetForm({
       </div>
 
       <Button type="submit" disabled={loading || setItemsDraft.length === 0}>
-        {loading ? <span className="spinner"></span> : '🚀'} セット内容を一括記録
+        {loading ? <span className="spinner"></span> : <Icon name="rocket" color="currentColor" />}セット内容を一括記録
       </Button>
     </form>
   );

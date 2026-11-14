@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { RECENT_PR_DAYS, type PersonalRecord } from '../../lib/analysis/personalRecords';
 import { COLORS } from '../../constants/colors';
+import Icon from '../Icon';
 
 interface Props {
   personalRecords: PersonalRecord[];
@@ -11,7 +12,7 @@ export default function PersonalRecordCard({ personalRecords }: Props) {
   return (
     <Card className="mb-4">
       <CardHeader>
-        <CardTitle>🏅 自己ベスト</CardTitle>
+        <CardTitle><Icon name="medal" />自己ベスト</CardTitle>
       </CardHeader>
       <CardContent>
         {personalRecords.length === 0 ? (

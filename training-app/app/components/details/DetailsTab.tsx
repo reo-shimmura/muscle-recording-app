@@ -15,6 +15,7 @@ import { buildExerciseCategoryMap, CARDIO_CATEGORY, UNCATEGORIZED_LABEL } from '
 import { aggregateDailyStats } from '../../lib/detailsStats';
 import { groupRecordsByExercise } from '../../lib/groupRecords';
 import type { TrainingRecord, CustomExercise, BodyWeight } from '../../types';
+import Icon from '../Icon';
 
 interface Props {
   records: TrainingRecord[];
@@ -127,7 +128,7 @@ export default function DetailsTab({ records, bodyWeights, customExercisesWithCa
   if (records.length === 0) {
     return (
       <div>
-        <h3>📊 統計・記録詳細</h3>
+        <h3><Icon name="chart-up" />統計・記録詳細</h3>
         <div className="alert alert-info">
           まだ記録がありません。「記録追加」タブで追加してください。
         </div>
@@ -137,7 +138,7 @@ export default function DetailsTab({ records, bodyWeights, customExercisesWithCa
 
   return (
     <div>
-      <h3>📊 統計・記録詳細</h3>
+      <h3><Icon name="chart-up" />統計・記録詳細</h3>
 
       <OptionButtons options={SECTION_OPTIONS} selected={section} onSelect={setSection} />
 
@@ -150,7 +151,7 @@ export default function DetailsTab({ records, bodyWeights, customExercisesWithCa
         <>
           <Card className="mb-4 ring-2 ring-primary/20">
             <CardHeader>
-              <CardTitle>📈 統計詳細</CardTitle>
+              <CardTitle><Icon name="chart-up" />統計詳細</CardTitle>
             </CardHeader>
             <CardContent>
               <DetailsFilters
@@ -172,7 +173,7 @@ export default function DetailsTab({ records, bodyWeights, customExercisesWithCa
 
           <Card className="ring-2 ring-primary/20">
             <CardHeader>
-              <CardTitle>📋 記録詳細</CardTitle>
+              <CardTitle><Icon name="training-log" />記録詳細</CardTitle>
             </CardHeader>
             <CardContent>
               <DetailsFilters

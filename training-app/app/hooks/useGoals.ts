@@ -60,7 +60,7 @@ export function useGoals(showMessage: (msg: AlertMessage) => void): UseGoalsRetu
         if (!res.ok) throw new Error(`Save failed: ${res.status}`);
         const goal: LongTermGoal = await res.json();
         setLongTermGoals((prev) => [goal, ...prev]);
-        showMessage({ type: 'success', text: '🎯 長期目標を設定しました！' });
+        showMessage({ type: 'success', text: '長期目標を設定しました！' });
       } catch (err: unknown) {
         console.error('長期目標の保存に失敗:', err instanceof Error ? err.message : err);
         showMessage({ type: 'error', text: '長期目標の保存に失敗しました。' });
@@ -94,7 +94,7 @@ export function useGoals(showMessage: (msg: AlertMessage) => void): UseGoalsRetu
         if (!res.ok) throw new Error(`Save failed: ${res.status}`);
         const goals: FrequencyGoal[] = await res.json();
         setWeeklyGoal(goals[0] ?? null);
-        showMessage({ type: 'success', text: '🎯 週間目標を設定しました！' });
+        showMessage({ type: 'success', text: '週間目標を設定しました！' });
       } catch (err: unknown) {
         console.error('週間目標の保存に失敗:', err instanceof Error ? err.message : err);
         showMessage({ type: 'error', text: '週間目標の保存に失敗しました。' });
@@ -114,7 +114,7 @@ export function useGoals(showMessage: (msg: AlertMessage) => void): UseGoalsRetu
         if (!res.ok) throw new Error(`Save failed: ${res.status}`);
         const goals: FrequencyGoal[] = await res.json();
         setMonthlyGoals(goals);
-        showMessage({ type: 'success', text: '🎯 月間目標を設定しました！' });
+        showMessage({ type: 'success', text: '月間目標を設定しました！' });
       } catch (err: unknown) {
         console.error('月間目標の保存に失敗:', err instanceof Error ? err.message : err);
         showMessage({ type: 'error', text: '月間目標の保存に失敗しました。' });

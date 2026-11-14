@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
 import type { WeeklyBodyStat } from '../../lib/analysis/bodyComposition';
 import { COLORS } from '../../constants/colors';
+import Icon from '../Icon';
 
 interface Props {
   weeklyStats: WeeklyBodyStat[];
@@ -20,7 +21,7 @@ export default function BodyVolumeCard({ weeklyStats }: Props) {
   return (
     <Card className="mb-4">
       <CardHeader>
-        <CardTitle>⚖️ 体重と負荷量</CardTitle>
+        <CardTitle><Icon name="scale" />体重と負荷量</CardTitle>
       </CardHeader>
       <CardContent>
         {!hasBodyWeight && (

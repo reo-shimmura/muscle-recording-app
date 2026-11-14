@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Icon from "./components/Icon";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -40,7 +41,7 @@ export default function RootLayout({
       >
         <div className="block-container">
           <header>
-            <h1>🏋️ 筋トレ記録・管理アプリ</h1>
+            <h1><Icon name="dumbbell" />筋トレ記録・管理アプリ</h1>
             <p className="small-muted">最終更新: {today}</p>
           </header>
           {children}

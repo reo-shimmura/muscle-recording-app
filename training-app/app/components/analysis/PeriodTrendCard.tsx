@@ -10,6 +10,7 @@ import { changeRate } from '../../lib/analysis/common';
 import { toDateStr } from '../../lib/goalsProgress';
 import type { TrainingRecord } from '../../types';
 import { COLORS } from '../../constants/colors';
+import Icon from '../Icon';
 
 interface Props {
   records: TrainingRecord[];
@@ -57,7 +58,7 @@ export default function PeriodTrendCard({ records }: Props) {
   return (
     <Card className="mb-4">
       <CardHeader>
-        <CardTitle>📆 週・月ごとの推移</CardTitle>
+        <CardTitle><Icon name="calendar-training" />週・月ごとの推移</CardTitle>
       </CardHeader>
       <CardContent>
         <OptionButtons options={UNIT_OPTIONS} selected={unit} onSelect={setUnit} />
