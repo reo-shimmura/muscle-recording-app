@@ -9,6 +9,7 @@ import StatsChart from './StatsChart';
 import OptionButtons from '../analysis/OptionButtons';
 import ContinuityPanel from '../analysis/ContinuityPanel';
 import BalancePanel from '../analysis/BalancePanel';
+import GrowthPanel from '../analysis/GrowthPanel';
 import { buildExerciseCategoryMap, CARDIO_CATEGORY, UNCATEGORIZED_LABEL } from '../../constants/exercises';
 import { aggregateDailyStats } from '../../lib/detailsStats';
 import { groupRecordsByExercise } from '../../lib/groupRecords';
@@ -23,13 +24,14 @@ interface Props {
 
 const ALL_VALUE = '';
 
-type Section = 'records' | 'continuity' | 'balance';
+type Section = 'records' | 'continuity' | 'balance' | 'growth';
 
 // 統計タブ内のサブタブ（分析が増えて縦に長くなりすぎないよう、観点ごとに切り替える）
 const SECTION_OPTIONS: { key: Section; label: string }[] = [
   { key: 'records', label: '種目・記録' },
   { key: 'continuity', label: '継続' },
   { key: 'balance', label: 'バランス' },
+  { key: 'growth', label: '成長' },
 ];
 
 /** 記録詳細タブ：統計詳細（グラフ）と記録詳細（一覧）をブロックごとに分け、それぞれ独立したカテゴリ・種目フィルターを持つ */
@@ -138,6 +140,7 @@ export default function DetailsTab({ records, customExercisesWithCategory, onEdi
 
       {section === 'continuity' && <ContinuityPanel records={records} />}
       {section === 'balance' && <BalancePanel records={records} categoryMap={categoryMap} />}
+      {section === 'growth' && <GrowthPanel records={records} categoryMap={categoryMap} />}
 
       {section === 'records' && (
         <>
