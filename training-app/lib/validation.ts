@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
+import { PROTEIN_SCOOP_G } from '@/app/constants/protein';
 
 export class ValidationError extends Error {}
 
@@ -113,6 +114,20 @@ export function parseRecordInput(raw: unknown): RecordFields {
     distance_km: patch.distance_km ?? null,
     memo: patch.memo ?? '',
   };
+}
+
+export interface ProteinIntakeFields {
+  date: string;
+  amount_g: number;
+}
+
+/** プロテインの摂取記録の入力を検証する（量は0より大きく、1杯分以下） */
+export function parseProteinIntakeInput(raw: unknown): ProteinIntakeFields {
+  const body = asObject(raw);
+  const date = requireDate(body.date, 'date');
+  const amount = requireNumber(body.amount_g, 'amount_g', { min: 0, max: PROTEIN_SCOOP_G });
+  if (amount <= 0) throw new ValidationError('amount_g は0より大きい値で指定してください。');
+  return { date, amount_g: amount };
 }
 
 export function validationErrorResponse(error: unknown): NextResponse | null {
