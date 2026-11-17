@@ -40,15 +40,20 @@ export function calcLongTermGoalProgress(goal: LongTermGoal, records: TrainingRe
     current = relevant.reduce((sum, r) => sum + r.sets, 0);
   } else if (goal.metric === 'total_reps') {
     current = relevant.reduce((sum, r) => sum + r.reps * r.sets, 0);
+  } else if (goal.metric === 'total_distance') {
+    // 距離・時間は小数になりやすいため小数第1位に丸める
+    current = Math.round(relevant.reduce((sum, r) => sum + (r.distance_km ?? 0), 0) * 10) / 10;
+  } else if (goal.metric === 'total_duration') {
+    current = Math.round(relevant.reduce((sum, r) => sum + (r.duration_minutes ?? 0), 0) * 10) / 10;
   }
 
   return { current, target: goal.target_value, percent: clampPercent(current, goal.target_value) };
 }
 
-/** ②週間目標の進捗：今週（月〜日）にトレーニング記録がある日数をカウントする */
-export function calcWeeklyGoalProgress(
-  goal: FrequencyGoal,
-  records: TrainingRecord[],
+/** 今週（月〜日）に記録がある日数を数え、目標回数に対する進捗を返す（筋トレ・プロテイン・体重計で共通） */
+export function calcWeeklyDaysProgress(
+  targetCount: number,
+  dates: string[],
   now: Date = new Date()
 ): GoalProgress {
   const weekStart = getWeekStart(now);
@@ -57,11 +62,18 @@ export function calcWeeklyGoalProgress(
   const weekStartStr = toDateStr(weekStart);
   const weekEndStr = toDateStr(weekEnd);
 
-  const uniqueDates = new Set(
-    records.filter((r) => r.date >= weekStartStr && r.date <= weekEndStr).map((r) => r.date)
-  );
+  const uniqueDates = new Set(dates.filter((date) => date >= weekStartStr && date <= weekEndStr));
 
-  return { current: uniqueDates.size, target: goal.target_count, percent: clampPercent(uniqueDates.size, goal.target_count) };
+  return { current: uniqueDates.size, target: targetCount, percent: clampPercent(uniqueDates.size, targetCount) };
+}
+
+/** ②週間目標の進捗：今週（月〜日）にトレーニング記録がある日数をカウントする */
+export function calcWeeklyGoalProgress(
+  goal: FrequencyGoal,
+  records: TrainingRecord[],
+  now: Date = new Date()
+): GoalProgress {
+  return calcWeeklyDaysProgress(goal.target_count, records.map((r) => r.date), now);
 }
 
 /** ③月間目標の進捗：今月、カテゴリ該当種目の記録がある日数をカウントする */

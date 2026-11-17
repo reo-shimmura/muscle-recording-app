@@ -46,11 +46,13 @@ export default function Home() {
     longTermGoals,
     weeklyGoal,
     monthlyGoals,
+    habitGoals,
     fetchGoals,
     addLongTermGoal,
     deleteLongTermGoal,
     saveWeeklyGoal,
     saveMonthlyGoals,
+    saveHabitGoals,
   } = useGoals(showMessage);
   const { bodyWeights, loading: bodyWeightLoading, fetchBodyWeights, saveBodyWeight, deleteBodyWeight } =
     useBodyWeights(showMessage);
@@ -187,6 +189,8 @@ export default function Home() {
               customExercisesWithCategory={customExercisesWithCategory}
               onNavigateToGoals={() => setTab('goals')}
               bodyWeights={bodyWeights}
+              habitGoals={habitGoals}
+              proteinIntakes={proteinIntakes}
             />
           )}
 
@@ -223,6 +227,10 @@ export default function Home() {
               onDeleteLongTermGoal={deleteLongTermGoal}
               onSaveWeeklyGoal={saveWeeklyGoal}
               onSaveMonthlyGoals={saveMonthlyGoals}
+              habitGoals={habitGoals}
+              proteinIntakes={proteinIntakes}
+              bodyWeights={bodyWeights}
+              onSaveHabitGoals={saveHabitGoals}
             />
           )}
 
