@@ -6,6 +6,8 @@ import LongTermGoalSection from './LongTermGoalSection';
 import WeeklyGoalSection from './WeeklyGoalSection';
 import HabitGoalSection from './HabitGoalSection';
 import MonthlyGoalSection from './MonthlyGoalSection';
+import GoalProgressList from '../home/GoalProgressList';
+import { buildHabitItems } from '../../lib/goalItems';
 import { buildExerciseCategoryMap } from '../../constants/exercises';
 import type { HabitGoalKind } from '../../constants/goals';
 import type { HabitGoals } from '../../hooks/useGoals';
@@ -46,7 +48,7 @@ const SECTION_TABS: { id: GoalSection; label: string; icon: IconName }[] = [
   { id: 'monthly', label: '月間目標', icon: 'calendar' },
 ];
 
-/** 目標管理タブ：長期・週間・月間の目標を、上部のボタンで切り替えて設定・表示する */
+/** 目標管理タブ：長期・週間・月間を上部のボタンで切り替え、各タブの上に達成状況、下に設定欄を置く */
 export default function GoalsTab({
   longTermGoals,
   weeklyGoal,
@@ -69,12 +71,10 @@ export default function GoalsTab({
     () => buildExerciseCategoryMap(customExercisesWithCategory),
     [customExercisesWithCategory]
   );
-  const habitDates = useMemo(
-    () => ({
-      protein: proteinIntakes.map((p) => p.date),
-      bodyWeight: bodyWeights.map((b) => b.date),
-    }),
-    [proteinIntakes, bodyWeights]
+  // 週間目標タブの上部に出す、今週の習慣（筋トレ・プロテイン・体重計）の達成状況
+  const habitItems = useMemo(
+    () => buildHabitItems({ weeklyGoal, habitGoals, records, proteinIntakes, bodyWeights }),
+    [weeklyGoal, habitGoals, records, proteinIntakes, bodyWeights]
   );
 
   return (
@@ -107,10 +107,14 @@ export default function GoalsTab({
       )}
 
       {section === 'weekly' && (
-        <>
-          <WeeklyGoalSection weeklyGoal={weeklyGoal} records={records} onSave={onSaveWeeklyGoal} />
-          <HabitGoalSection habitGoals={habitGoals} habitDates={habitDates} onSave={onSaveHabitGoals} />
-        </>
+        <div>
+          <h4><Icon name="calendar-training" />週間目標</h4>
+          <GoalProgressList icon="chart-up" title="今週の達成状況" items={habitItems} />
+
+          <h4 className="mt-6"><Icon name="target" />目標を設定</h4>
+          <WeeklyGoalSection weeklyGoal={weeklyGoal} onSave={onSaveWeeklyGoal} />
+          <HabitGoalSection habitGoals={habitGoals} onSave={onSaveHabitGoals} />
+        </div>
       )}
 
       {section === 'monthly' && (
