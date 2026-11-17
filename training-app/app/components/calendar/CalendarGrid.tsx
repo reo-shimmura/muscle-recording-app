@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import type { TrainingRecord } from '../../types';
-import { primaryAlpha } from '../../constants/colors';
+import { COLORS, primaryAlpha } from '../../constants/colors';
 
 interface Props {
   records: TrainingRecord[];
@@ -9,6 +9,11 @@ interface Props {
   selectedDate: string | null;
   onMonthChange: (month: number, year: number) => void;
   onDateSelect: (date: string) => void;
+  /** プロテイン・体重を記録した日に付ける印（カレンダー画面でのみ指定する） */
+  markers?: {
+    proteinDates: Set<string>;
+    bodyWeightDates: Set<string>;
+  };
 }
 
 const MONTH_NAMES = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
@@ -35,6 +40,7 @@ export default function CalendarGrid({
   selectedDate,
   onMonthChange,
   onDateSelect,
+  markers,
 }: Props) {
   const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
   const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
@@ -142,6 +148,12 @@ export default function CalendarGrid({
               }}
             >
               <div style={{ lineHeight: '1', height: '1em' }}>{day}</div>
+              {markers && (
+                <DayMarkers
+                  protein={markers.proteinDates.has(dateStr)}
+                  bodyWeight={markers.bodyWeightDates.has(dateStr)}
+                />
+              )}
             </button>
           );
         })}
@@ -151,6 +163,12 @@ export default function CalendarGrid({
         <LegendItem color={RECORD_COLOR_TIERS.low.base} label="1種目" />
         <LegendItem color={RECORD_COLOR_TIERS.mid.base} label="2〜4種目" />
         <LegendItem color={RECORD_COLOR_TIERS.high.base} label="5種目以上" />
+        {markers && (
+          <>
+            <MarkerLegendItem color={COLORS.protein} label="プロテイン" />
+            <MarkerLegendItem color={COLORS.bodyWeight} label="体重" />
+          </>
+        )}
       </div>
     </div>
   );
@@ -160,6 +178,32 @@ function LegendItem({ color, label }: { color: string; label: string }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
       <span style={{ width: '0.9rem', height: '0.9rem', borderRadius: '4px', backgroundColor: color, border: '1px solid var(--border-color)', display: 'inline-block' }} />
+      {label}
+    </div>
+  );
+}
+
+const MARKER_SIZE = '0.4rem';
+
+/** 日付のマスの下に付ける小さな点（プロテイン＝オレンジ、体重＝紫） */
+function DayMarkers({ protein, bodyWeight }: { protein: boolean; bodyWeight: boolean }) {
+  if (!protein && !bodyWeight) return null;
+  return (
+    <div style={{ display: 'flex', gap: '0.15rem', height: MARKER_SIZE }}>
+      {protein && <Dot color={COLORS.protein} />}
+      {bodyWeight && <Dot color={COLORS.bodyWeight} />}
+    </div>
+  );
+}
+
+function Dot({ color }: { color: string }) {
+  return <span style={{ width: MARKER_SIZE, height: MARKER_SIZE, borderRadius: '50%', backgroundColor: color, display: 'inline-block' }} />;
+}
+
+function MarkerLegendItem({ color, label }: { color: string; label: string }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+      <Dot color={color} />
       {label}
     </div>
   );

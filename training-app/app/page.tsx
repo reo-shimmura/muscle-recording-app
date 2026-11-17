@@ -227,7 +227,7 @@ export default function Home() {
           )}
 
           {tab === 'calendar' && (
-            <CalendarTab records={records} />
+            <CalendarTab records={records} proteinIntakes={proteinIntakes} bodyWeights={bodyWeights} />
           )}
 
           {tab === 'details' && (
