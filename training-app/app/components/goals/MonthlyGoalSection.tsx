@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
 import { DEFAULT_EXERCISES } from '../../constants/exercises';
-import { calcMonthlyGoalProgress } from '../../lib/goalsProgress';
+import { buildMonthlyItems } from '../../lib/goalItems';
+import GoalProgressList from '../home/GoalProgressList';
 import type { FrequencyGoal, TrainingRecord } from '../../types';
 import Icon from '../Icon';
 
@@ -16,7 +15,7 @@ interface Props {
 
 const CATEGORIES = Object.keys(DEFAULT_EXERCISES);
 
-/** ③月間目標セクション：カテゴリ（部位）ごとに1か月何回筋トレに行くかを一括設定・表示する */
+/** ③月間目標：上に今月の達成状況（横棒）、下にカテゴリ（部位）ごとの回数の設定欄を置く */
 export default function MonthlyGoalSection({ monthlyGoals, records, categoryMap, onSave }: Props) {
   const [targetCounts, setTargetCounts] = useState<Record<string, number>>(
     Object.fromEntries(CATEGORIES.map((c) => [c, 0]))
@@ -38,11 +37,20 @@ export default function MonthlyGoalSection({ monthlyGoals, records, categoryMap,
     onSave(CATEGORIES.map((category) => ({ category, target_count: targetCounts[category] })));
   };
 
-  const goalByCategory = new Map(monthlyGoals.map((g) => [g.category, g]));
+  const items = buildMonthlyItems(monthlyGoals, records, categoryMap);
 
   return (
     <div>
       <h4><Icon name="calendar" />月間目標</h4>
+
+      <GoalProgressList
+        icon="chart-up"
+        title="今月の達成状況"
+        items={items}
+        emptyMessage="まだ月間目標がありません。下の欄から設定してください。"
+      />
+
+      <h4 className="mt-6"><Icon name="target" />目標を設定</h4>
       <p className="small-muted">1か月のうち、カテゴリ（部位）ごとに何回筋トレに行くかを設定します。</p>
 
       <form onSubmit={handleSubmit} className="element-container">
@@ -63,27 +71,6 @@ export default function MonthlyGoalSection({ monthlyGoals, records, categoryMap,
         </div>
         <Button type="submit" className="mt-4"><Icon name="target" color="currentColor" />月間目標をまとめて設定する</Button>
       </form>
-
-      {monthlyGoals.length > 0 && (
-        <div className="mt-3">
-          {CATEGORIES.map((category) => {
-            const goal = goalByCategory.get(category);
-            if (!goal || goal.target_count <= 0) return null;
-            const progress = calcMonthlyGoalProgress(goal, records, categoryMap);
-            return (
-              <Card key={category} className="mb-3 border-l-4 border-l-primary">
-                <CardContent>
-                  <div className="record-item-title">{category}</div>
-                  <div className="record-item-meta">
-                    今月の実績: {progress.current} / {progress.target} 回（{progress.percent}%）
-                  </div>
-                  <Progress value={progress.percent} className="mt-2" />
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      )}
     </div>
   );
 }

@@ -1,11 +1,9 @@
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
 import GoalForm from './GoalForm';
-import { calcLongTermGoalProgress } from '../../lib/goalsProgress';
+import GoalProgressList from '../home/GoalProgressList';
+import { buildLongTermItems } from '../../lib/goalItems';
 import type { LongTermGoal, GoalMetric, TrainingRecord } from '../../types';
 import Icon from '../Icon';
-import { METRIC_LABELS } from '../../constants/goals';
 
 interface Props {
   goals: LongTermGoal[];
@@ -16,37 +14,40 @@ interface Props {
   onDelete: (id: number) => void;
 }
 
-/** ①長期目標セクション：種目ごとの数値目標（例: ベンチプレス 最大重量60kg）を設定・表示する */
+/**
+ * ①長期目標：上に全目標の達成状況（横棒・削除ボタン付き）、下に目標の設定欄を置く。
+ * 例: ベンチプレス 最大重量60kg、ランニング 累計距離100km
+ */
 export default function LongTermGoalSection({ goals, records, allExercisesFlat, categoryMap, onAdd, onDelete }: Props) {
+  const items = buildLongTermItems(goals, records);
+
+  const handleDelete = (id: number, label: string) => {
+    if (window.confirm(`長期目標「${label}」を削除しますか？`)) onDelete(id);
+  };
+
   return (
     <div>
       <h4><Icon name="trophy" />長期目標</h4>
-      <p className="small-muted">最終的に達成したい目標を種目ごとに設定します。ランニングなど有酸素の種目は、累計距離・累計時間を目標にできます。</p>
-      <GoalForm onAdd={onAdd} exercises={allExercisesFlat} categoryMap={categoryMap} />
 
-      {goals.length > 0 ? (
-        <div>
-          {goals.map((g) => {
-            const progress = calcLongTermGoalProgress(g, records);
-            return (
-              <Card key={g.id} className="mb-3 border-l-4 border-l-primary">
-                <CardContent>
-                  <div className="record-item-title">{g.exercise}（{METRIC_LABELS[g.metric]}）</div>
-                  <div className="record-item-meta">
-                    目標: {g.target_value} {g.unit}　実績: {progress.current} {g.unit}（{progress.percent}%）
-                  </div>
-                  <Progress value={progress.percent} className="mt-2" />
-                  <Button variant="ghost" size="sm" className="mt-2" onClick={() => onDelete(g.id)}>
-                    削除
-                  </Button>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      ) : (
-        <div className="alert alert-info">まだ長期目標がありません。上記で目標を追加してください。</div>
-      )}
+      <GoalProgressList
+        icon="chart-up"
+        title="達成状況"
+        items={items}
+        emptyMessage="まだ長期目標がありません。下の欄から追加してください。"
+        renderAction={(item) =>
+          item.goalId !== null && (
+            <Button variant="ghost" size="xs" onClick={() => handleDelete(item.goalId!, item.label)}>
+              削除
+            </Button>
+          )
+        }
+      />
+
+      <h4 className="mt-6"><Icon name="target" />目標を設定</h4>
+      <p className="small-muted">
+        最終的に達成したい目標を種目ごとに設定します。ランニングなど有酸素の種目は、累計距離・累計時間を目標にできます。
+      </p>
+      <GoalForm onAdd={onAdd} exercises={allExercisesFlat} categoryMap={categoryMap} />
     </div>
   );
 }
