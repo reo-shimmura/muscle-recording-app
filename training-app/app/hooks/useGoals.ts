@@ -2,23 +2,43 @@
 
 import { useCallback, useState } from 'react';
 import type { LongTermGoal, FrequencyGoal, GoalMetric, AlertMessage } from '../types';
+import { HABIT_GOAL_KINDS, OVERALL_WEEKLY_CATEGORY, type HabitGoalKind } from '../constants/goals';
+
+/** 習慣目標（プロテイン・体重計の週回数）。未設定なら null */
+export type HabitGoals = Record<HabitGoalKind, FrequencyGoal | null>;
+
+const EMPTY_HABIT_GOALS: HabitGoals = { protein: null, bodyWeight: null };
+
+/** 週間の頻度目標から、筋トレ全体の目標を取り出す */
+function pickOverallWeeklyGoal(goals: FrequencyGoal[]): FrequencyGoal | null {
+  return goals.find((g) => g.category === OVERALL_WEEKLY_CATEGORY) ?? null;
+}
+
+/** 週間の頻度目標から、習慣目標（プロテイン・体重計）を取り出す */
+function pickHabitGoals(goals: FrequencyGoal[]): HabitGoals {
+  const find = (kind: HabitGoalKind) => goals.find((g) => g.category === HABIT_GOAL_KINDS[kind].category) ?? null;
+  return { protein: find('protein'), bodyWeight: find('bodyWeight') };
+}
 
 interface UseGoalsReturn {
   longTermGoals: LongTermGoal[];
   weeklyGoal: FrequencyGoal | null;
   monthlyGoals: FrequencyGoal[];
+  habitGoals: HabitGoals;
   loading: boolean;
   fetchGoals: () => Promise<void>;
   addLongTermGoal: (input: { exercise: string; metric: GoalMetric; target_value: number; unit: string }) => Promise<void>;
   deleteLongTermGoal: (id: number) => Promise<void>;
   saveWeeklyGoal: (targetCount: number) => Promise<void>;
   saveMonthlyGoals: (items: { category: string; target_count: number }[]) => Promise<void>;
+  saveHabitGoals: (counts: Record<HabitGoalKind, number>) => Promise<void>;
 }
 
 export function useGoals(showMessage: (msg: AlertMessage) => void): UseGoalsReturn {
   const [longTermGoals, setLongTermGoals] = useState<LongTermGoal[]>([]);
   const [weeklyGoal, setWeeklyGoal] = useState<FrequencyGoal | null>(null);
   const [monthlyGoals, setMonthlyGoals] = useState<FrequencyGoal[]>([]);
+  const [habitGoals, setHabitGoals] = useState<HabitGoals>(EMPTY_HABIT_GOALS);
   const [loading, setLoading] = useState(false);
 
   const fetchGoals = useCallback(async () => {
@@ -38,7 +58,9 @@ export function useGoals(showMessage: (msg: AlertMessage) => void): UseGoalsRetu
       const monthly: FrequencyGoal[] = await monthlyRes.json();
 
       setLongTermGoals(longTerm);
-      setWeeklyGoal(weekly[0] ?? null);
+      // 週間の頻度目標には、筋トレ全体の目標と習慣目標（プロテイン・体重計）が含まれる
+      setWeeklyGoal(pickOverallWeeklyGoal(weekly));
+      setHabitGoals(pickHabitGoals(weekly));
       setMonthlyGoals(monthly);
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : '不明なエラーが発生しました。';
@@ -89,11 +111,11 @@ export function useGoals(showMessage: (msg: AlertMessage) => void): UseGoalsRetu
         const res = await fetch('/api/goals/frequency', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ periodType: 'week', items: [{ category: '', target_count: targetCount }] }),
+          body: JSON.stringify({ periodType: 'week', items: [{ category: OVERALL_WEEKLY_CATEGORY, target_count: targetCount }] }),
         });
         if (!res.ok) throw new Error(`Save failed: ${res.status}`);
         const goals: FrequencyGoal[] = await res.json();
-        setWeeklyGoal(goals[0] ?? null);
+        setWeeklyGoal(pickOverallWeeklyGoal(goals));
         showMessage({ type: 'success', text: '週間目標を設定しました！' });
       } catch (err: unknown) {
         console.error('週間目標の保存に失敗:', err instanceof Error ? err.message : err);
@@ -123,15 +145,41 @@ export function useGoals(showMessage: (msg: AlertMessage) => void): UseGoalsRetu
     [showMessage]
   );
 
+  const saveHabitGoals = useCallback(
+    async (counts: Record<HabitGoalKind, number>) => {
+      try {
+        const items = (Object.keys(counts) as HabitGoalKind[]).map((kind) => ({
+          category: HABIT_GOAL_KINDS[kind].category,
+          target_count: counts[kind],
+        }));
+        const res = await fetch('/api/goals/frequency', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ periodType: 'week', items }),
+        });
+        if (!res.ok) throw new Error(`Save failed: ${res.status}`);
+        const goals: FrequencyGoal[] = await res.json();
+        setHabitGoals(pickHabitGoals(goals));
+        showMessage({ type: 'success', text: '習慣目標を設定しました！' });
+      } catch (err: unknown) {
+        console.error('習慣目標の保存に失敗:', err instanceof Error ? err.message : err);
+        showMessage({ type: 'error', text: '習慣目標の保存に失敗しました。' });
+      }
+    },
+    [showMessage]
+  );
+
   return {
     longTermGoals,
     weeklyGoal,
     monthlyGoals,
+    habitGoals,
     loading,
     fetchGoals,
     addLongTermGoal,
     deleteLongTermGoal,
     saveWeeklyGoal,
     saveMonthlyGoals,
+    saveHabitGoals,
   };
 }

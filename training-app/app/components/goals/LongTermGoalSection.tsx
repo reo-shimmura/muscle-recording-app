@@ -5,6 +5,7 @@ import GoalForm from './GoalForm';
 import { calcLongTermGoalProgress } from '../../lib/goalsProgress';
 import type { LongTermGoal, GoalMetric, TrainingRecord } from '../../types';
 import Icon from '../Icon';
+import { METRIC_LABELS } from '../../constants/goals';
 
 interface Props {
   goals: LongTermGoal[];
@@ -13,12 +14,6 @@ interface Props {
   onAdd: (goal: { exercise: string; metric: GoalMetric; target_value: number; unit: string }) => void;
   onDelete: (id: number) => void;
 }
-
-const METRIC_LABELS: Record<GoalMetric, string> = {
-  max_weight: '最大重量',
-  total_sets: '累計セット数',
-  total_reps: '累計回数',
-};
 
 /** ①長期目標セクション：種目ごとの数値目標（例: ベンチプレス 最大重量60kg）を設定・表示する */
 export default function LongTermGoalSection({ goals, records, allExercisesFlat, onAdd, onDelete }: Props) {

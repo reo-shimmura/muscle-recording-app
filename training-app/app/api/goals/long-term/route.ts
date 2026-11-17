@@ -10,7 +10,7 @@ import {
   validationErrorResponse,
 } from '@/lib/validation';
 
-const VALID_METRICS: GoalMetric[] = ['max_weight', 'total_sets', 'total_reps'];
+const VALID_METRICS: GoalMetric[] = ['max_weight', 'total_sets', 'total_reps', 'total_distance', 'total_duration'];
 
 export async function GET() {
   try {

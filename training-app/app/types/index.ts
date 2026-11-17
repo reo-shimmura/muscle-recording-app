@@ -11,7 +11,8 @@ export interface TrainingRecord {
   memo: string;
 }
 
-export type GoalMetric = 'max_weight' | 'total_sets' | 'total_reps';
+// 筋トレ：最大重量・累計セット数・累計回数 ／ 有酸素：累計距離(km)・累計時間(分)
+export type GoalMetric = 'max_weight' | 'total_sets' | 'total_reps' | 'total_distance' | 'total_duration';
 export type PeriodType = 'week' | 'month';
 
 /** ①長期目標：種目ごとの数値目標（例: ベンチプレス 最大重量60kg） */
