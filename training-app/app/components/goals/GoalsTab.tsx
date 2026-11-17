@@ -1,62 +1,126 @@
-import { useMemo } from 'react';
+'use client'
+
+import { useMemo, useState } from 'react';
+import { Button } from '@/components/ui/button';
 import LongTermGoalSection from './LongTermGoalSection';
 import WeeklyGoalSection from './WeeklyGoalSection';
+import HabitGoalSection from './HabitGoalSection';
 import MonthlyGoalSection from './MonthlyGoalSection';
 import { buildExerciseCategoryMap } from '../../constants/exercises';
-import type { LongTermGoal, FrequencyGoal, GoalMetric, TrainingRecord, CustomExercise } from '../../types';
-import Icon from '../Icon';
+import type { HabitGoalKind } from '../../constants/goals';
+import type { HabitGoals } from '../../hooks/useGoals';
+import type {
+  BodyWeight,
+  CustomExercise,
+  FrequencyGoal,
+  GoalMetric,
+  LongTermGoal,
+  ProteinIntake,
+  TrainingRecord,
+} from '../../types';
+import Icon, { type IconName } from '../Icon';
 
 interface Props {
   longTermGoals: LongTermGoal[];
   weeklyGoal: FrequencyGoal | null;
   monthlyGoals: FrequencyGoal[];
+  habitGoals: HabitGoals;
   records: TrainingRecord[];
+  proteinIntakes: ProteinIntake[];
+  bodyWeights: BodyWeight[];
   customExercisesWithCategory: CustomExercise[];
   allExercisesFlat: string[];
   onAddLongTermGoal: (goal: { exercise: string; metric: GoalMetric; target_value: number; unit: string }) => void;
   onDeleteLongTermGoal: (id: number) => void;
   onSaveWeeklyGoal: (targetCount: number) => void;
   onSaveMonthlyGoals: (items: { category: string; target_count: number }[]) => void;
+  onSaveHabitGoals: (counts: Record<HabitGoalKind, number>) => void;
 }
 
-/** 目標管理タブ：①長期目標 ②週間目標 ③月間目標 の3種類の目標を設定・表示する */
+type GoalSection = 'longTerm' | 'weekly' | 'monthly';
+
+// 画面上部の切り替えボタン（3種類の目標の境界を分かりやすくするため、1つずつ表示する）
+const SECTION_TABS: { id: GoalSection; label: string; icon: IconName }[] = [
+  { id: 'longTerm', label: '長期目標', icon: 'trophy' },
+  { id: 'weekly', label: '週間目標', icon: 'calendar-training' },
+  { id: 'monthly', label: '月間目標', icon: 'calendar' },
+];
+
+/** 目標管理タブ：長期・週間・月間の目標を、上部のボタンで切り替えて設定・表示する */
 export default function GoalsTab({
   longTermGoals,
   weeklyGoal,
   monthlyGoals,
+  habitGoals,
   records,
+  proteinIntakes,
+  bodyWeights,
   customExercisesWithCategory,
   allExercisesFlat,
   onAddLongTermGoal,
   onDeleteLongTermGoal,
   onSaveWeeklyGoal,
   onSaveMonthlyGoals,
+  onSaveHabitGoals,
 }: Props) {
+  const [section, setSection] = useState<GoalSection>('longTerm');
+
   const categoryMap = useMemo(
     () => buildExerciseCategoryMap(customExercisesWithCategory),
     [customExercisesWithCategory]
+  );
+  const habitDates = useMemo(
+    () => ({
+      protein: proteinIntakes.map((p) => p.date),
+      bodyWeight: bodyWeights.map((b) => b.date),
+    }),
+    [proteinIntakes, bodyWeights]
   );
 
   return (
     <div>
       <h3><Icon name="target" />目標管理</h3>
 
-      <LongTermGoalSection
-        goals={longTermGoals}
-        records={records}
-        allExercisesFlat={allExercisesFlat}
-        onAdd={onAddLongTermGoal}
-        onDelete={onDeleteLongTermGoal}
-      />
+      <div className="row element-container" style={{ flexWrap: 'wrap' }}>
+        {SECTION_TABS.map((tab) => (
+          <Button
+            key={tab.id}
+            type="button"
+            variant={section === tab.id ? 'default' : 'outline'}
+            onClick={() => setSection(tab.id)}
+          >
+            <Icon name={tab.icon} color="currentColor" />
+            {tab.label}
+          </Button>
+        ))}
+      </div>
 
-      <WeeklyGoalSection weeklyGoal={weeklyGoal} records={records} onSave={onSaveWeeklyGoal} />
+      {section === 'longTerm' && (
+        <LongTermGoalSection
+          goals={longTermGoals}
+          records={records}
+          allExercisesFlat={allExercisesFlat}
+          categoryMap={categoryMap}
+          onAdd={onAddLongTermGoal}
+          onDelete={onDeleteLongTermGoal}
+        />
+      )}
 
-      <MonthlyGoalSection
-        monthlyGoals={monthlyGoals}
-        records={records}
-        categoryMap={categoryMap}
-        onSave={onSaveMonthlyGoals}
-      />
+      {section === 'weekly' && (
+        <>
+          <WeeklyGoalSection weeklyGoal={weeklyGoal} records={records} onSave={onSaveWeeklyGoal} />
+          <HabitGoalSection habitGoals={habitGoals} habitDates={habitDates} onSave={onSaveHabitGoals} />
+        </>
+      )}
+
+      {section === 'monthly' && (
+        <MonthlyGoalSection
+          monthlyGoals={monthlyGoals}
+          records={records}
+          categoryMap={categoryMap}
+          onSave={onSaveMonthlyGoals}
+        />
+      )}
     </div>
   );
 }

@@ -11,17 +11,18 @@ interface Props {
   goals: LongTermGoal[];
   records: TrainingRecord[];
   allExercisesFlat: string[];
+  categoryMap: Record<string, string>;
   onAdd: (goal: { exercise: string; metric: GoalMetric; target_value: number; unit: string }) => void;
   onDelete: (id: number) => void;
 }
 
 /** ①長期目標セクション：種目ごとの数値目標（例: ベンチプレス 最大重量60kg）を設定・表示する */
-export default function LongTermGoalSection({ goals, records, allExercisesFlat, onAdd, onDelete }: Props) {
+export default function LongTermGoalSection({ goals, records, allExercisesFlat, categoryMap, onAdd, onDelete }: Props) {
   return (
     <div>
       <h4><Icon name="trophy" />長期目標</h4>
-      <p className="small-muted">最終的に達成したい目標を種目ごとに設定します。</p>
-      <GoalForm onAdd={onAdd} exercises={allExercisesFlat} />
+      <p className="small-muted">最終的に達成したい目標を種目ごとに設定します。ランニングなど有酸素の種目は、累計距離・累計時間を目標にできます。</p>
+      <GoalForm onAdd={onAdd} exercises={allExercisesFlat} categoryMap={categoryMap} />
 
       {goals.length > 0 ? (
         <div>
