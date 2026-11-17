@@ -65,6 +65,7 @@ async function initSchema(db: Client): Promise<void> {
     'write'
   );
   await migrateAddDurationMinutes(db);
+  await migrateAddDistanceKm(db);
   await migrateDropProgressImages(db);
 }
 
@@ -74,6 +75,15 @@ async function migrateAddDurationMinutes(db: Client): Promise<void> {
   const hasDurationColumn = columns.rows.some((row) => row.name === 'duration_minutes');
   if (!hasDurationColumn) {
     await db.execute('ALTER TABLE records ADD COLUMN duration_minutes REAL');
+  }
+}
+
+// 既存のrecordsテーブルに distance_km 列がなければ追加する（有酸素種目の距離をkm単位で記録するため。任意項目）
+async function migrateAddDistanceKm(db: Client): Promise<void> {
+  const columns = await db.execute('PRAGMA table_info(records)');
+  const hasDistanceColumn = columns.rows.some((row) => row.name === 'distance_km');
+  if (!hasDistanceColumn) {
+    await db.execute('ALTER TABLE records ADD COLUMN distance_km REAL');
   }
 }
 

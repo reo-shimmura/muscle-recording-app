@@ -70,6 +70,7 @@ export interface RecordFields {
   reps: number;
   sets: number;
   duration_minutes: number | null;
+  distance_km: number | null;
   memo: string;
 }
 
@@ -80,6 +81,8 @@ const recordFieldParsers: { [K in keyof RecordFields]: (value: unknown) => Recor
   reps: (v) => requireNumber(v, 'reps', { min: 0, max: 10000, integer: true }),
   sets: (v) => requireNumber(v, 'sets', { min: 0, max: 1000, integer: true }),
   duration_minutes: (v) => (v === null ? null : requireNumber(v, 'duration_minutes', { min: 0, max: 1440 })),
+  // 有酸素の距離（km）。任意項目のため null を許可する
+  distance_km: (v) => (v === null ? null : requireNumber(v, 'distance_km', { min: 0, max: 1000 })),
   memo: (v) => requireString(v, 'memo', LIMITS.memo, { allowEmpty: true }),
 };
 
@@ -107,6 +110,7 @@ export function parseRecordInput(raw: unknown): RecordFields {
     reps: patch.reps || 1,
     sets: patch.sets || 1,
     duration_minutes: patch.duration_minutes ?? null,
+    distance_km: patch.distance_km ?? null,
     memo: patch.memo ?? '',
   };
 }

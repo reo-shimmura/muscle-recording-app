@@ -6,6 +6,8 @@ export interface TrainingRecord {
   reps: number;
   sets: number;
   duration_minutes?: number | null;
+  /** 有酸素種目の距離（km）。任意 */
+  distance_km?: number | null;
   memo: string;
 }
 
