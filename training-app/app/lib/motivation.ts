@@ -1,8 +1,15 @@
 /**
- * モチベーション（継続度）の推移を、エビングハウスの忘却曲線に似たモデルで計算する。
- * - 記録した日: その日の「濃さ」に応じて値が 100 に向かって上がる（1回で埋まるのは残りの最大半分）
- * - 記録のない日: 値が指数関数的に下がる
- * - 定着度: 間を空けずに続けるほど下がり方がゆるやかになり、長く空くと元に戻っていく
+ * モチベーション（継続度）の推移を計算する。
+ *
+ * 上がり方
+ * - 記録した日を基準に、直近7日で3日以上記録していれば「継続中」とみなす（週3回が基準）
+ * - 継続していない日の記録は少しだけ上がる（0 から1回記録しても 5 まで）
+ * - 継続中は、最初は上がりづらく、継続が約1か月を超えると1回あたりの上がり幅が増えていく
+ *   （週3回を続けると、1週間で約13、1か月で約43、2か月で約80、3か月でほぼ100）
+ *
+ * 下がり方
+ * - 記録が途切れると、最初はゆっくり、日が経つほど急に下がる
+ * - 高いときほど下がりにくい（100 からは14日で0、0 付近からは7日で0）
  */
 import type { TrainingRecord } from '../types';
 import { parseLocalDate } from './chartTimeAxis';
@@ -14,7 +21,7 @@ export interface MotivationPoint {
   time: number;
   /** モチベーション値（0〜100） */
   level: number;
-  /** 記録した日なら true（跳ね上がった後の点） */
+  /** 記録した日なら true（上がった後の点） */
   isSession: boolean;
 }
 
@@ -26,25 +33,34 @@ export interface MotivationResult {
   status: MotivationStatus;
   /** 最後の記録から今日までの日数 */
   daysSinceLast: number;
+  /** 今日を含む直近7日で記録した日数 */
+  recentSessions: number;
+  /** 継続中なら継続日数（何日目か）、継続していなければ null */
+  continuousDays: number | null;
 }
 
-// 定着度（日）: 値が約37%まで下がるのにかかる日数の目安
-const INITIAL_STABILITY = 3;
-const MAX_STABILITY = 21;
-const STABILITY_GROWTH = 2;
-// この日数以内に次の記録があれば「続けている」とみなして定着度を伸ばす
-const KEEP_UP_GAP_DAYS = 3;
-// この日数を超えて空いたら定着度を半分に落とす
-const LAPSE_GAP_DAYS = 7;
-// 負荷量が0の日（有酸素のみ等）でも、記録したこと自体は評価する
-const MIN_INTENSITY = 0.3;
+/** 継続とみなす基準：直近 CONTINUITY_WINDOW_DAYS 日で CONTINUITY_MIN_SESSIONS 日以上 */
+export const CONTINUITY_WINDOW_DAYS = 7;
+export const CONTINUITY_MIN_SESSIONS = 3;
 
-// 跳ね上がった点を置く時刻のずらし幅。曲線補間は同じ時刻の2点を扱えないため、
+// 1回の記録で上がる量
+const NON_CONTINUOUS_GAIN = 5; // 継続していないとき
+const CONTINUOUS_MIN_GAIN = 5; // 継続し始め
+const CONTINUOUS_MAX_GAIN = 8; // 継続が長く続いたとき
+// 上がり幅が増え始める・最大になる継続日数（シミュレーションで目安に合わせた値）
+const GAIN_RAMP_START_DAYS = 28;
+const GAIN_RAMP_END_DAYS = 84;
+
+// 記録が途切れてから 0 になるまでの日数（値が 0 付近なら7日、100 なら14日）
+const MIN_FADE_DAYS = 7;
+const MAX_FADE_DAYS = 14;
+
+// 上がった点を置く時刻のずらし幅。曲線補間は同じ時刻の2点を扱えないため、
 // 記録日の0時（下がった値）から少し後ろにずらして、急だが滑らかな立ち上がりにする
 const RISE_OFFSET_MS = 12 * 60 * 60 * 1000;
-// 1回の記録で埋める「100までの残り」の割合の上限。1回で急に戻らず、続けるほど積み上がるようにする
-const BOOST_RATE = 0.5;
+const DAY_MS = 24 * 60 * 60 * 1000;
 
+const MAX_LEVEL = 100;
 const GOOD_THRESHOLD = 70;
 export const WARNING_THRESHOLD = 40;
 
@@ -52,38 +68,33 @@ function round1(value: number): number {
   return Math.round(value * 10) / 10;
 }
 
-/** 日付ごとの負荷量（重量×回数×セット数）を集計する */
-function sumVolumeByDate(records: TrainingRecord[]): Map<string, number> {
-  const volumes = new Map<string, number>();
-  for (const r of records) {
-    volumes.set(r.date, (volumes.get(r.date) ?? 0) + r.weight * r.reps * r.sets);
-  }
-  return volumes;
+/** 0〜1 を滑らかにつなぐ（始まりと終わりがなだらかな S 字） */
+function smoothStep(t: number): number {
+  const x = Math.min(1, Math.max(0, t));
+  return x * x * (3 - 2 * x);
 }
 
-/** 負荷量が0より大きい日の平均（自分の普段の負荷量）を求める */
-function averagePositiveVolume(volumes: Map<string, number>): number {
-  const positives = Array.from(volumes.values()).filter((v) => v > 0);
-  if (positives.length === 0) return 0;
-  return positives.reduce((sum, v) => sum + v, 0) / positives.length;
+/** 記録時の値に応じて、0 まで下がるのにかかる日数（高いほど長い） */
+export function fadeDays(levelAtSession: number): number {
+  const ratio = Math.min(MAX_LEVEL, Math.max(0, levelAtSession)) / MAX_LEVEL;
+  return MIN_FADE_DAYS + (MAX_FADE_DAYS - MIN_FADE_DAYS) * ratio;
 }
 
-/** その日の濃さ（0.3〜1）。自分の平均負荷量に対する割合で、平均以上は1とする */
-export function calcIntensity(volume: number, averageVolume: number): number {
-  if (averageVolume <= 0 || volume <= 0) return MIN_INTENSITY;
-  const ratio = Math.min(1, volume / averageVolume);
-  return MIN_INTENSITY + (1 - MIN_INTENSITY) * ratio;
+/** 最後に記録したときの値から、days 日経ったときの値（最初はゆっくり、後半ほど急に下がる） */
+export function decayLevel(levelAtSession: number, days: number): number {
+  if (days <= 0) return levelAtSession;
+  const progress = days / fadeDays(levelAtSession);
+  return Math.max(0, levelAtSession * (1 - progress * progress));
 }
 
-/** 前回からの間隔と濃さに応じて、定着度を更新する */
-export function updateStability(stability: number, gapDays: number, intensity: number): number {
-  if (gapDays <= KEEP_UP_GAP_DAYS) {
-    return Math.min(MAX_STABILITY, stability + STABILITY_GROWTH * intensity);
-  }
-  if (gapDays > LAPSE_GAP_DAYS) {
-    return Math.max(INITIAL_STABILITY, stability / 2);
-  }
-  return stability;
+/**
+ * 1回の記録で上がる量。
+ * continuousDays は継続中なら継続日数（0 = 継続し始めた日）、継続していなければ null。
+ */
+export function sessionGain(continuousDays: number | null): number {
+  if (continuousDays === null) return NON_CONTINUOUS_GAIN;
+  const ramp = smoothStep((continuousDays - GAIN_RAMP_START_DAYS) / (GAIN_RAMP_END_DAYS - GAIN_RAMP_START_DAYS));
+  return CONTINUOUS_MIN_GAIN + (CONTINUOUS_MAX_GAIN - CONTINUOUS_MIN_GAIN) * ramp;
 }
 
 export function toMotivationStatus(level: number): MotivationStatus {
@@ -92,54 +103,64 @@ export function toMotivationStatus(level: number): MotivationStatus {
   return 'warning';
 }
 
+/** day を含む直近7日で、記録した日数を数える */
+function countRecentSessions(sessionDates: Set<string>, day: Date): number {
+  let count = 0;
+  const cursor = new Date(day);
+  for (let i = 0; i < CONTINUITY_WINDOW_DAYS; i++) {
+    if (sessionDates.has(toDateStr(cursor))) count += 1;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  return count;
+}
+
 /**
  * 最初の記録日から today まで1日ずつ値を計算する。
- * 記録した日は「下がった後の値（0時）」と「跳ね上がった後の値（12時間後）」の2点を置き、
- * グラフ上で急に立ち上がる忘却曲線の形にする。記録がなければ null を返す。
+ * 記録した日は「下がった後の値（0時）」と「上がった後の値（12時間後）」の2点を置く。
+ * 今日より後の日付の記録は含めない。今日までに記録がなければ null を返す。
  */
 export function calcMotivation(records: TrainingRecord[], today: string): MotivationResult | null {
-  const volumes = sumVolumeByDate(records);
-  if (volumes.size === 0) return null;
+  const sessionDates = new Set(records.map((r) => r.date).filter((date) => date <= today));
+  if (sessionDates.size === 0) return null;
 
-  const averageVolume = averagePositiveVolume(volumes);
-  const firstDate = Array.from(volumes.keys()).sort()[0];
-  const endTime = Math.max(parseLocalDate(today), ...Array.from(volumes.keys()).map(parseLocalDate));
+  const sortedDates = Array.from(sessionDates).sort();
+  const endTime = parseLocalDate(today);
 
   const points: MotivationPoint[] = [];
-  let level = 0;
-  let stability = INITIAL_STABILITY;
+  let levelAtSession = 0;
   let lastSessionTime: number | null = null;
+  let continuityStartTime: number | null = null;
+  let recentSessions = 0;
 
-  const cursor = new Date(parseLocalDate(firstDate));
+  const cursor = new Date(parseLocalDate(sortedDates[0]));
   while (cursor.getTime() <= endTime) {
     const date = toDateStr(cursor);
     const time = cursor.getTime();
 
-    // 前日からの忘却（初日は下がる前の値がないので飛ばす）
-    if (points.length > 0) {
-      level *= Math.exp(-1 / stability);
-    }
+    // 継続の判定（直近7日で3日以上）。基準を下回ったら継続日数をリセットする
+    recentSessions = countRecentSessions(sessionDates, cursor);
+    if (recentSessions < CONTINUITY_MIN_SESSIONS) continuityStartTime = null;
+    else if (continuityStartTime === null) continuityStartTime = time;
 
-    const volume = volumes.get(date);
-    if (volume !== undefined) {
-      const intensity = calcIntensity(volume, averageVolume);
-      if (lastSessionTime !== null) {
-        const gapDays = Math.round((time - lastSessionTime) / (24 * 60 * 60 * 1000));
-        stability = updateStability(stability, gapDays, intensity);
-        points.push({ date, time, level: round1(level), isSession: false });
-      }
-      level += (100 - level) * intensity * BOOST_RATE;
+    const decayed = lastSessionTime === null ? 0 : decayLevel(levelAtSession, Math.round((time - lastSessionTime) / DAY_MS));
+
+    if (sessionDates.has(date)) {
+      const continuousDays = continuityStartTime === null ? null : Math.round((time - continuityStartTime) / DAY_MS);
+      if (lastSessionTime !== null) points.push({ date, time, level: round1(decayed), isSession: false });
+      levelAtSession = Math.min(MAX_LEVEL, decayed + sessionGain(continuousDays));
       lastSessionTime = time;
-      points.push({ date, time: time + RISE_OFFSET_MS, level: round1(level), isSession: true });
+      points.push({ date, time: time + RISE_OFFSET_MS, level: round1(levelAtSession), isSession: true });
     } else {
-      points.push({ date, time, level: round1(level), isSession: false });
+      points.push({ date, time, level: round1(decayed), isSession: false });
     }
 
     cursor.setDate(cursor.getDate() + 1);
   }
 
   const current = points[points.length - 1].level;
-  const daysSinceLast = Math.round((parseLocalDate(today) - (lastSessionTime ?? 0)) / (24 * 60 * 60 * 1000));
+  const daysSinceLast = Math.max(0, Math.round((parseLocalDate(today) - (lastSessionTime ?? 0)) / DAY_MS));
+  const continuousDays =
+    continuityStartTime === null ? null : Math.round((parseLocalDate(today) - continuityStartTime) / DAY_MS) + 1;
 
-  return { points, current, status: toMotivationStatus(current), daysSinceLast: Math.max(0, daysSinceLast) };
+  return { points, current, status: toMotivationStatus(current), daysSinceLast, recentSessions, continuousDays };
 }

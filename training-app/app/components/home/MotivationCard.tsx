@@ -4,7 +4,13 @@ import { useMemo } from 'react';
 import { Area, CartesianGrid, ReferenceLine } from 'recharts';
 import { type ChartConfig } from '@/components/ui/chart';
 import ScrollableTimeChart from '../charts/ScrollableTimeChart';
-import { calcMotivation, WARNING_THRESHOLD, type MotivationStatus } from '../../lib/motivation';
+import {
+  calcMotivation,
+  CONTINUITY_MIN_SESSIONS,
+  CONTINUITY_WINDOW_DAYS,
+  WARNING_THRESHOLD,
+  type MotivationStatus,
+} from '../../lib/motivation';
 import { axisSpanDays, buildTimeAxis } from '../../lib/chartTimeAxis';
 import { toDateStr } from '../../lib/goalsProgress';
 import type { TrainingRecord } from '../../types';
@@ -27,6 +33,15 @@ const STATUS_VIEW: Record<MotivationStatus, { label: string; color: string; mess
   steady: { label: '維持', color: COLORS.caution, message: 'この調子をキープしましょう。' },
   warning: { label: '要注意', color: COLORS.warning, message: '少し間が空いています。軽めでも1回やってみましょう。' },
 };
+
+/**
+ * 状態に応じた一言。継続し始めは値が低く「要注意」になりやすいため、
+ * 継続中であれば「間が空いている」ではなく励ましの言葉にする。
+ */
+function statusMessage(base: string, status: MotivationStatus, continuousDays: number | null): string {
+  if (status === 'warning' && continuousDays !== null) return '継続中です。続けるほど上がりやすくなります。';
+  return base;
+}
 
 /** ホーム画面：忘却曲線のような形で、トレーニングの継続度（モチベーション）を表示する */
 export default function MotivationCard({ records }: Props) {
@@ -64,7 +79,17 @@ export default function MotivationCard({ records }: Props) {
           {result.daysSinceLast === 0 ? '今日記録しました' : `最後の記録から${result.daysSinceLast}日`}
         </span>
       </div>
-      <div className="small-muted" style={{ marginBottom: '0.5rem' }}>{view.message}</div>
+      <div className="small-muted">{statusMessage(view.message, result.status, result.continuousDays)}</div>
+      <div style={{ marginBottom: '0.5rem', fontSize: '0.875rem' }}>
+        {result.continuousDays !== null ? (
+          <span style={{ color: COLORS.successText, fontWeight: 700 }}>継続中（{result.continuousDays}日目）</span>
+        ) : (
+          <span style={{ color: COLORS.warning, fontWeight: 700 }}>継続できていません</span>
+        )}
+        <span className="small-muted">
+          {'　'}直近{CONTINUITY_WINDOW_DAYS}日で{result.recentSessions}回（週{CONTINUITY_MIN_SESSIONS}回で継続）
+        </span>
+      </div>
 
       <ScrollableTimeChart
         config={CHART_CONFIG}
@@ -94,7 +119,8 @@ export default function MotivationCard({ records }: Props) {
 
       <div className="small-muted" style={{ fontSize: '0.75rem' }}>
         {scrollable && '← 横にスライドすると過去の推移を見られます。'}
-        記録した日に上がり、間が空くと下がります。続けるほど下がりにくくなります（点線より下は要注意）。
+        週{CONTINUITY_MIN_SESSIONS}回以上で継続とみなし、続けるほど上がりやすくなります（3か月でほぼ100）。
+        記録が途切れると下がり、2週間空くと0に戻ります。高いときほど下がりにくくなります（点線より下は要注意）。
       </div>
     </div>
   );
