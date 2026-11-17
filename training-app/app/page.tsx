@@ -11,7 +11,8 @@ import RecordTab from './components/record/RecordTab';
 import EditRecordModal from './components/record/EditRecordModal';
 import GoalsTab from './components/goals/GoalsTab';
 import CalendarTab from './components/calendar/CalendarTab';
-import DetailsTab from './components/details/DetailsTab';
+import StatsTab from './components/details/StatsTab';
+import RecordsTab from './components/details/RecordsTab';
 import { useTrainingData } from './hooks/useTrainingData';
 import { useGoals } from './hooks/useGoals';
 import { useBodyWeights } from './hooks/useBodyWeights';
@@ -26,7 +27,8 @@ const MAIN_TABS: { id: string; label: string; icon: IconName; color: string }[] 
   { id: 'write', label: '記録追加', icon: 'pencil', color: NAV_COLORS.write },
   { id: 'goals', label: '目標管理', icon: 'target', color: NAV_COLORS.goals },
   { id: 'calendar', label: 'カレンダー', icon: 'calendar', color: NAV_COLORS.calendar },
-  { id: 'details', label: '統計・詳細', icon: 'chart-up', color: NAV_COLORS.details },
+  { id: 'stats', label: '統計・分析', icon: 'chart-up', color: NAV_COLORS.stats },
+  { id: 'records', label: '記録詳細', icon: 'training-log', color: NAV_COLORS.records },
 ];
 
 export default function Home() {
@@ -108,7 +110,8 @@ export default function Home() {
       const data: TrainingRecord[] = await res.json();
       setRecords((prev) => [...data, ...prev]);
       showMessage({ type: 'success', text: `${payloads.length}セットを記録しました！` });
-      setTab('details');
+      // 保存した記録をすぐ確認できるよう、記録詳細へ移る
+      setTab('records');
       return true;
     } catch (err: unknown) {
       console.error('Save failed:', err instanceof Error ? err.message : err);
@@ -238,10 +241,17 @@ export default function Home() {
             <CalendarTab records={records} proteinIntakes={proteinIntakes} bodyWeights={bodyWeights} />
           )}
 
-          {tab === 'details' && (
-            <DetailsTab
+          {tab === 'stats' && (
+            <StatsTab
               records={records}
               bodyWeights={bodyWeights}
+              customExercisesWithCategory={customExercisesWithCategory}
+            />
+          )}
+
+          {tab === 'records' && (
+            <RecordsTab
+              records={records}
               customExercisesWithCategory={customExercisesWithCategory}
               onEditRequest={setEditingRecord}
               onDeleteRequest={setDeleteConfirm}
