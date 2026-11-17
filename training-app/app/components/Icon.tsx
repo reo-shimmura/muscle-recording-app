@@ -29,6 +29,7 @@ const ICON_FILES = {
   rocket: 'rocket', // ロケット（10779）
   star: 'star', // 星（41410）
   lifter: 'lifter', // ダンベルを持つ人（29691）
+  shaker: 'shaker', // 目盛り付きボトル。プロテインシェイカーとして使う（4609）
 } as const;
 
 export type IconName = keyof typeof ICON_FILES;
