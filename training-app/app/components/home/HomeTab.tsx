@@ -12,10 +12,14 @@ import { groupRecordsByExercise } from '../../lib/groupRecords';
 import {
   calcLongTermGoalProgress,
   calcWeeklyGoalProgress,
+  calcWeeklyDaysProgress,
+  type GoalProgress,
   calcMonthlyGoalProgress,
 } from '../../lib/goalsProgress';
 import { calcWeeklyGoalStreak } from '../../lib/streak';
-import type { LongTermGoal, FrequencyGoal, TrainingRecord, CustomExercise, BodyWeight } from '../../types';
+import type { LongTermGoal, FrequencyGoal, TrainingRecord, CustomExercise, BodyWeight, ProteinIntake } from '../../types';
+import { HABIT_GOAL_KINDS, type HabitGoalKind } from '../../constants/goals';
+import type { HabitGoals } from '../../hooks/useGoals';
 import Icon from '../Icon';
 import { formatRecordDetail } from '../../lib/recordFormat';
 
@@ -27,6 +31,8 @@ interface Props {
   customExercisesWithCategory: CustomExercise[];
   onNavigateToGoals: () => void;
   bodyWeights: BodyWeight[];
+  habitGoals: HabitGoals;
+  proteinIntakes: ProteinIntake[];
 }
 
 // ホームでは主要な目標のみ抜粋し、残りは目標管理タブに誘導する
@@ -41,6 +47,8 @@ export default function HomeTab({
   customExercisesWithCategory,
   onNavigateToGoals,
   bodyWeights,
+  habitGoals,
+  proteinIntakes,
 }: Props) {
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
@@ -53,7 +61,31 @@ export default function HomeTab({
     [customExercisesWithCategory]
   );
 
-  const weeklyProgress = weeklyGoal ? calcWeeklyGoalProgress(weeklyGoal, records) : null;
+  const weeklyProgress = useMemo(
+    () => (weeklyGoal ? calcWeeklyGoalProgress(weeklyGoal, records) : null),
+    [weeklyGoal, records]
+  );
+
+  // 習慣目標（今週）：筋トレの回数に加え、プロテイン摂取・体重計の記録の日数。目標を設定しているものだけ並べる
+  const habitRings = useMemo(() => {
+    const rings: { key: string; label: string; unit: string; progress: GoalProgress }[] = [];
+    if (weeklyProgress) rings.push({ key: 'training', label: '筋トレ', unit: '回', progress: weeklyProgress });
+    const habitDates: Record<HabitGoalKind, string[]> = {
+      protein: proteinIntakes.map((p) => p.date),
+      bodyWeight: bodyWeights.map((b) => b.date),
+    };
+    for (const kind of Object.keys(HABIT_GOAL_KINDS) as HabitGoalKind[]) {
+      const goal = habitGoals[kind];
+      if (!goal || goal.target_count <= 0) continue;
+      rings.push({
+        key: kind,
+        label: HABIT_GOAL_KINDS[kind].label,
+        unit: '日',
+        progress: calcWeeklyDaysProgress(goal.target_count, habitDates[kind]),
+      });
+    }
+    return rings;
+  }, [weeklyProgress, habitGoals, proteinIntakes, bodyWeights]);
   const weeklyGoalStreak = useMemo(() => calcWeeklyGoalStreak(weeklyGoal, records), [weeklyGoal, records]);
 
   // 達成率が低い（伸びしろが大きい）順に主要な目標だけを抜粋する
@@ -73,7 +105,7 @@ export default function HomeTab({
   }, [monthlyGoals, records, categoryMap]);
 
   const hasAnyGoal =
-    longTermGoals.length > 0 || weeklyProgress !== null || monthlyProgressList.length > 0;
+    longTermGoals.length > 0 || habitRings.length > 0 || monthlyProgressList.length > 0;
 
   return (
     <div>
@@ -141,16 +173,18 @@ export default function HomeTab({
         </div>
       )}
 
-      {weeklyProgress && (
+      {habitRings.length > 0 && (
         <div className="element-container">
-          <h4><Icon name="calendar-training" />週間目標</h4>
-          <div className="row" style={{ justifyContent: 'center' }}>
-            <GoalRing
-              label="今週の実施"
-              sublabel={`${weeklyProgress.current} / ${weeklyProgress.target} 回`}
-              percent={weeklyProgress.percent}
-              size={140}
-            />
+          <h4><Icon name="calendar-training" />習慣目標（今週）</h4>
+          <div className="row" style={{ flexWrap: 'wrap', justifyContent: 'center' }}>
+            {habitRings.map(({ key, label, unit, progress }) => (
+              <GoalRing
+                key={key}
+                label={label}
+                sublabel={`${progress.current} / ${progress.target} ${unit}`}
+                percent={progress.percent}
+              />
+            ))}
           </div>
         </div>
       )}

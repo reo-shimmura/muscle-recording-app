@@ -189,6 +189,8 @@ export default function Home() {
               customExercisesWithCategory={customExercisesWithCategory}
               onNavigateToGoals={() => setTab('goals')}
               bodyWeights={bodyWeights}
+              habitGoals={habitGoals}
+              proteinIntakes={proteinIntakes}
             />
           )}
 
