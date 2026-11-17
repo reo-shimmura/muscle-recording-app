@@ -27,9 +27,6 @@ interface Props {
   customExercisesWithCategory: CustomExercise[];
   onNavigateToGoals: () => void;
   bodyWeights: BodyWeight[];
-  bodyWeightLoading: boolean;
-  onSaveBodyWeight: (date: string, weightKg: number) => Promise<boolean>;
-  onDeleteBodyWeight: (id: number) => void;
 }
 
 // ホームでは主要な目標のみ抜粋し、残りは目標管理タブに誘導する
@@ -44,9 +41,6 @@ export default function HomeTab({
   customExercisesWithCategory,
   onNavigateToGoals,
   bodyWeights,
-  bodyWeightLoading,
-  onSaveBodyWeight,
-  onDeleteBodyWeight,
 }: Props) {
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
@@ -89,12 +83,7 @@ export default function HomeTab({
 
       <LastTrainedCard records={records} categoryMap={categoryMap} />
 
-      <BodyWeightCard
-        bodyWeights={bodyWeights}
-        loading={bodyWeightLoading}
-        onSave={onSaveBodyWeight}
-        onDelete={onDeleteBodyWeight}
-      />
+      <BodyWeightCard bodyWeights={bodyWeights} />
 
       <div className="element-container">
         <h4><Icon name="calendar" />カレンダー</h4>

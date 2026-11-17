@@ -28,6 +28,8 @@ export const COLORS = {
 
   /** 体重 */
   bodyWeight: '#8b5cf6',
+  /** プロテイン */
+  protein: '#f97316',
   /** 赤と対比させたい分類（引く種目など）にだけ使う青 */
   contrast: '#3b82f6',
 

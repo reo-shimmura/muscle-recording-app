@@ -61,6 +61,13 @@ async function initSchema(db: Client): Promise<void> {
         weight_kg REAL NOT NULL,
         created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
       )`,
+      // プロテインの摂取記録。1回飲むごとに1件（同じ日に複数件あれば合計する）
+      `CREATE TABLE IF NOT EXISTS protein_intakes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        date TEXT NOT NULL,
+        amount_g REAL NOT NULL,
+        created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+      )`,
     ],
     'write'
   );
