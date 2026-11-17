@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import type { TrainingRecord } from '../../types';
+import { formatRecordDetail } from '../../lib/recordFormat';
 
 interface Props {
   exercise: string;
@@ -21,9 +22,7 @@ export default function RecordGroupCard({ exercise, records, onEditRequest, onDe
       <CardContent>
         <div className="record-item-title">{exercise}</div>
         {records.map((r) => {
-          const detail = r.duration_minutes != null
-            ? `${r.duration_minutes}分`
-            : `${r.weight}kg × ${r.reps}回 × ${r.sets}セット`;
+          const detail = formatRecordDetail(r);
           const isExpanded = expandedId === r.id;
 
           return (

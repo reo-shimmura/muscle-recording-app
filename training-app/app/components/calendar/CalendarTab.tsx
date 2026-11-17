@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import CalendarGrid from './CalendarGrid';
 import type { TrainingRecord } from '../../types';
 import Icon from '../Icon';
+import { formatRecordDetail } from '../../lib/recordFormat';
 
 interface Props {
   records: TrainingRecord[];
@@ -61,9 +62,7 @@ export default function CalendarTab({ records }: Props) {
                     {group.records.map((r) => (
                       <div key={r.id}>
                         <div className="record-item-meta">
-                          {r.duration_minutes != null
-                            ? `${r.duration_minutes}分`
-                            : `${r.weight}kg × ${r.reps}回 × ${r.sets}セット`}
+                          {formatRecordDetail(r)}
                         </div>
                         {r.memo && <div style={{ marginTop: '0.5rem', fontSize: '0.9rem' }}>{r.memo}</div>}
                       </div>

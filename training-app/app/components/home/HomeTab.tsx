@@ -17,6 +17,7 @@ import {
 import { calcWeeklyGoalStreak } from '../../lib/streak';
 import type { LongTermGoal, FrequencyGoal, TrainingRecord, CustomExercise, BodyWeight } from '../../types';
 import Icon from '../Icon';
+import { formatRecordDetail } from '../../lib/recordFormat';
 
 interface Props {
   longTermGoals: LongTermGoal[];
@@ -124,9 +125,7 @@ export default function HomeTab({
                       <div className="record-item-title">{group.exercise}</div>
                       {group.records.map((r) => (
                         <div key={r.id} className="record-item-meta">
-                          {r.duration_minutes != null
-                            ? `${r.duration_minutes}分`
-                            : `${r.weight}kg × ${r.reps}回 × ${r.sets}セット`}
+                          {formatRecordDetail(r)}
                         </div>
                       ))}
                     </CardContent>

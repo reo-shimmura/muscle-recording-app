@@ -35,6 +35,8 @@ export default function EditRecordModal({
   const [reps, setReps] = useState(record.reps);
   const [sets, setSets] = useState(record.sets);
   const [durationMinutes, setDurationMinutes] = useState(record.duration_minutes ?? 0);
+  // 有酸素の距離（km）。任意項目で、0 のときは未入力として保存しない
+  const [distanceKm, setDistanceKm] = useState(record.distance_km ?? 0);
   const [memo, setMemo] = useState(record.memo);
 
   const categoryMap = useMemo(
@@ -69,6 +71,7 @@ export default function EditRecordModal({
           reps: 0,
           sets: 0,
           duration_minutes: durationMinutes,
+          distance_km: distanceKm > 0 ? distanceKm : null,
           memo: memo.trim(),
         }
       : {
@@ -79,6 +82,7 @@ export default function EditRecordModal({
           reps: Math.max(1, reps),
           sets: Math.max(1, sets),
           duration_minutes: null,
+          distance_km: null,
           memo: memo.trim(),
         };
 
@@ -117,15 +121,27 @@ export default function EditRecordModal({
           </div>
 
           {isCardio ? (
-            <div className="element-container">
-              <label>時間（分）</label>
-              <NumberInput
-                min="0"
-                value={durationMinutes}
-                onChange={setDurationMinutes}
-                required
-              />
-            </div>
+            <>
+              <div className="element-container">
+                <label>時間（分）</label>
+                <NumberInput
+                  min="0"
+                  value={durationMinutes}
+                  onChange={setDurationMinutes}
+                  required
+                />
+              </div>
+              <div className="element-container">
+                <label>距離（km・任意）</label>
+                <NumberInput
+                  min="0"
+                  step="0.01"
+                  value={distanceKm}
+                  onChange={setDistanceKm}
+                  placeholder="例: 5.2"
+                />
+              </div>
+            </>
           ) : (
             <div className="element-container">
               <label>重量・回数・セット数</label>

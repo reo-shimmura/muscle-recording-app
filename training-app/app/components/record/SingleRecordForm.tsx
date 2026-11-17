@@ -32,6 +32,8 @@ export default function SingleRecordForm({
   const [memo, setMemo] = useState('');
   const [sets, setSets] = useState<{ weight: number; reps: number }[]>([{ weight: 0, reps: 1 }]);
   const [durationMinutes, setDurationMinutes] = useState(0);
+  // 有酸素の距離（km）。任意項目で、0 のときは未入力として保存しない
+  const [distanceKm, setDistanceKm] = useState(0);
 
   const categoryMap = useMemo(
     () => buildExerciseCategoryMap(customExercisesWithCategory),
@@ -74,6 +76,7 @@ export default function SingleRecordForm({
           reps: 0,
           sets: 0,
           duration_minutes: durationMinutes,
+          distance_km: distanceKm > 0 ? distanceKm : null,
           memo: memo.trim(),
         }]
       : sets.map((s) => ({
@@ -99,6 +102,7 @@ export default function SingleRecordForm({
     setMemo('');
     setSets([{ weight: 0, reps: 1 }]);
     setDurationMinutes(0);
+    setDistanceKm(0);
   };
 
   return (
@@ -125,15 +129,27 @@ export default function SingleRecordForm({
       </div>
 
       {isCardio ? (
-        <div className="element-container">
-          <label>時間（分）</label>
-          <NumberInput
-            min="0"
-            value={durationMinutes}
-            onChange={setDurationMinutes}
-            required
-          />
-        </div>
+        <>
+          <div className="element-container">
+            <label>時間（分）</label>
+            <NumberInput
+              min="0"
+              value={durationMinutes}
+              onChange={setDurationMinutes}
+              required
+            />
+          </div>
+          <div className="element-container">
+            <label>距離（km・任意）</label>
+            <NumberInput
+              min="0"
+              step="0.01"
+              value={distanceKm}
+              onChange={setDistanceKm}
+              placeholder="例: 5.2"
+            />
+          </div>
+        </>
       ) : (
         <WorkoutSetList
           sets={sets}
