@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import GoalRing from './GoalRing';
+import GoalProgressCard from './GoalProgressCard';
+import type { GoalProgressItem } from './GoalProgressBar';
 import BodyWeightCard from './BodyWeightCard';
 import MotivationCard from './MotivationCard';
 import LastTrainedCard from './LastTrainedCard';
@@ -18,7 +18,7 @@ import {
 } from '../../lib/goalsProgress';
 import { calcWeeklyGoalStreak } from '../../lib/streak';
 import type { LongTermGoal, FrequencyGoal, TrainingRecord, CustomExercise, BodyWeight, ProteinIntake } from '../../types';
-import { HABIT_GOAL_KINDS, type HabitGoalKind } from '../../constants/goals';
+import { HABIT_GOAL_KINDS, METRIC_LABELS, type HabitGoalKind } from '../../constants/goals';
 import type { HabitGoals } from '../../hooks/useGoals';
 import Icon from '../Icon';
 import { formatRecordDetail } from '../../lib/recordFormat';
@@ -104,14 +104,45 @@ export default function HomeTab({
       .sort((a, b) => a.progress.percent - b.progress.percent);
   }, [monthlyGoals, records, categoryMap]);
 
-  const hasAnyGoal =
-    longTermGoals.length > 0 || habitRings.length > 0 || monthlyProgressList.length > 0;
+  // 目標の進捗カード（横棒）に渡す形へ変換する
+  const habitItems: GoalProgressItem[] = habitRings.map(({ key, label, unit, progress }) => ({
+    key,
+    label,
+    unit,
+    current: progress.current,
+    target: progress.target,
+    percent: progress.percent,
+  }));
+  const longTermItems: GoalProgressItem[] = longTermHighlights.map(({ goal, progress }) => ({
+    key: `long-term-${goal.id}`,
+    label: `${goal.exercise}（${METRIC_LABELS[goal.metric]}）`,
+    unit: goal.unit,
+    current: progress.current,
+    target: progress.target,
+    percent: progress.percent,
+  }));
+  const monthlyItems: GoalProgressItem[] = monthlyProgressList.map(({ goal, progress }) => ({
+    key: `monthly-${goal.id}`,
+    label: goal.category,
+    unit: '回',
+    current: progress.current,
+    target: progress.target,
+    percent: progress.percent,
+  }));
 
   return (
     <div>
       <h3><Icon name="home" />ホーム</h3>
 
       <MotivationCard records={records} />
+
+      <GoalProgressCard
+        habitItems={habitItems}
+        longTermItems={longTermItems}
+        monthlyItems={monthlyItems}
+        weeklyGoalStreak={weeklyGoalStreak}
+        onNavigateToGoals={onNavigateToGoals}
+      />
 
       <LastTrainedCard records={records} categoryMap={categoryMap} />
 
@@ -157,71 +188,6 @@ export default function HomeTab({
           </DialogContent>
         </Dialog>
       </div>
-
-      {weeklyGoalStreak > 0 && (
-        <div className="element-container">
-          <div className="alert alert-success"><Icon name="flame" color="var(--warning)" />週間目標 {weeklyGoalStreak}週連続達成中！</div>
-        </div>
-      )}
-
-      {!hasAnyGoal && (
-        <div className="element-container">
-          <div className="alert alert-info">
-            まだ目標が設定されていません。「目標管理」タブから長期・週間・月間の目標を設定しましょう。
-          </div>
-          <Button onClick={onNavigateToGoals}><Icon name="target" color="currentColor" />目標を設定する</Button>
-        </div>
-      )}
-
-      {habitRings.length > 0 && (
-        <div className="element-container">
-          <h4><Icon name="calendar-training" />習慣目標（今週）</h4>
-          <div className="row" style={{ flexWrap: 'wrap', justifyContent: 'center' }}>
-            {habitRings.map(({ key, label, unit, progress }) => (
-              <GoalRing
-                key={key}
-                label={label}
-                sublabel={`${progress.current} / ${progress.target} ${unit}`}
-                percent={progress.percent}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {longTermHighlights.length > 0 && (
-        <div className="element-container">
-          <h4><Icon name="trophy" />長期目標</h4>
-          <div className="row" style={{ flexWrap: 'wrap', justifyContent: 'center' }}>
-            {longTermHighlights.map(({ goal, progress }) => (
-              <GoalRing
-                key={goal.id}
-                label={goal.exercise}
-                sublabel={`${progress.current} / ${progress.target} ${goal.unit}`}
-                percent={progress.percent}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {monthlyProgressList.length > 0 && (
-        <div className="element-container">
-          <h4><Icon name="calendar" />月間目標</h4>
-          <div className="row" style={{ flexWrap: 'wrap', justifyContent: 'center' }}>
-            {monthlyProgressList.map(({ goal, progress }) => (
-              <GoalRing
-                key={goal.id}
-                label={goal.category}
-                sublabel={`${progress.current} / ${progress.target} 回`}
-                percent={progress.percent}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {hasAnyGoal && <Button onClick={onNavigateToGoals}>すべての目標を見る</Button>}
     </div>
   );
 }

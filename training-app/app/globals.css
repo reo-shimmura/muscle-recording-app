@@ -455,36 +455,6 @@ hr {
 }
 
 /* Goal progress ring */
-.goal-ring {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.4rem;
-  width: 128px;
-}
-
-.goal-ring-canvas {
-  position: relative;
-}
-
-.goal-ring-percent {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 1rem;
-  color: var(--foreground);
-}
-
-.goal-ring-label {
-  font-weight: 600;
-  font-size: 0.85rem;
-  color: var(--foreground);
-  text-align: center;
-}
-
 /* Responsive adjustments */
 @media (max-width: 640px) {
   header h1 {
