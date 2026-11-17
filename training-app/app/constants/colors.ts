@@ -45,7 +45,8 @@ export const NAV_COLORS = {
   write: '#f97316',
   goals: '#f59e0b',
   calendar: '#10b981',
-  details: '#8b5cf6',
+  stats: '#8b5cf6',
+  records: '#0ea5e9',
 } as const;
 
 /** 主色（#dc2626）を指定の不透明度で返す（ヒートマップ・カレンダーの濃淡用） */
