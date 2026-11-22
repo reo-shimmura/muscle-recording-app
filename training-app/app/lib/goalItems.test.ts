@@ -17,7 +17,12 @@ const sources: HabitSources = {
   weeklyGoal: weekly(1, '', 3),
   habitGoals: { protein: weekly(2, 'プロテイン', 5), bodyWeight: null },
   records: [record('2026-11-16'), record('2026-11-17'), record('2026-11-10')],
-  proteinIntakes: [{ id: 1, date: '2026-11-16', amount_g: 30 }, { id: 2, date: '2026-11-16', amount_g: 15 }],
+  // 習慣「プロテイン摂取」はプロテイン（粉）を飲んだ日だけを数える（卵だけの 11/17 は数えない）
+  foodIntakes: [
+    { id: 1, date: '2026-11-16', food_key: 'protein_powder', quantity: 30, protein_g: 21 },
+    { id: 2, date: '2026-11-16', food_key: 'protein_powder', quantity: 15, protein_g: 10.5 },
+    { id: 3, date: '2026-11-17', food_key: 'egg', quantity: 2, protein_g: 12.2 },
+  ],
   bodyWeights: [{ id: 1, date: '2026-11-17', weight_kg: 70 }],
 };
 

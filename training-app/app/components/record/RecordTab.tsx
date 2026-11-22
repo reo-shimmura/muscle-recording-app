@@ -10,7 +10,7 @@ import SingleRecordForm from './SingleRecordForm';
 import ApplySetForm from './ApplySetForm';
 import CreateSetForm from './CreateSetForm';
 import { useSetTemplates } from '../../hooks/useSetTemplates';
-import type { CustomExercise, TrainingRecord, AlertMessage, ProteinIntake, BodyWeight } from '../../types';
+import type { CustomExercise, TrainingRecord, AlertMessage, FoodIntake, BodyWeight } from '../../types';
 
 interface Props {
   customExercises: string[];
@@ -21,10 +21,10 @@ interface Props {
   onSaveExercise: (name: string, category: string) => Promise<void>;
   showMessage: (msg: AlertMessage) => void;
   records: TrainingRecord[];
-  proteinIntakes: ProteinIntake[];
-  proteinLoading: boolean;
-  onSaveProtein: (date: string, amountG: number) => Promise<boolean>;
-  onDeleteProtein: (id: number) => void;
+  foodIntakes: FoodIntake[];
+  foodLoading: boolean;
+  onSaveFood: (date: string, foodKey: string, quantity: number) => Promise<boolean>;
+  onDeleteFood: (id: number) => void;
   bodyWeights: BodyWeight[];
   bodyWeightLoading: boolean;
   onSaveBodyWeight: (date: string, weightKg: number) => Promise<boolean>;
@@ -36,7 +36,7 @@ type RecordKind = 'training' | 'protein' | 'bodyWeight';
 // 記録の種類（画面上部の選択ボタン）
 const RECORD_KIND_TABS: { id: RecordKind; label: string; icon: IconName }[] = [
   { id: 'training', label: '筋トレ記録', icon: 'dumbbell' },
-  { id: 'protein', label: 'プロテイン', icon: 'shaker' },
+  { id: 'protein', label: 'たんぱく質', icon: 'shaker' },
   { id: 'bodyWeight', label: '体重', icon: 'scale' },
 ];
 
@@ -50,7 +50,7 @@ const SET_MODE_TABS = [
   { id: 'create', label: '新規セット作成', icon: 'pencil' as const },
 ];
 
-/** 記録追加タブ：筋トレ記録（単体登録・セット登録）、プロテイン、体重の3種類を切り替えて記録する */
+/** 記録追加タブ：筋トレ記録（単体登録・セット登録）、たんぱく質（プロテイン・食事）、体重の3種類を切り替えて記録する */
 export default function RecordTab({
   customExercises,
   customExercisesWithCategory,
@@ -60,10 +60,10 @@ export default function RecordTab({
   onSaveExercise,
   showMessage,
   records,
-  proteinIntakes,
-  proteinLoading,
-  onSaveProtein,
-  onDeleteProtein,
+  foodIntakes,
+  foodLoading,
+  onSaveFood,
+  onDeleteFood,
   bodyWeights,
   bodyWeightLoading,
   onSaveBodyWeight,
@@ -110,10 +110,11 @@ export default function RecordTab({
       {kind === 'protein' && (
         <ProteinForm
           records={records}
-          proteinIntakes={proteinIntakes}
-          loading={proteinLoading}
-          onSave={onSaveProtein}
-          onDelete={onDeleteProtein}
+          bodyWeights={bodyWeights}
+          foodIntakes={foodIntakes}
+          loading={foodLoading}
+          onSave={onSaveFood}
+          onDelete={onDeleteFood}
         />
       )}
 

@@ -10,7 +10,7 @@ import { buildExerciseCategoryMap } from '../../constants/exercises';
 import { groupRecordsByExercise } from '../../lib/groupRecords';
 import { buildHabitItems, buildLongTermItems, buildMonthlyItems } from '../../lib/goalItems';
 import { calcWeeklyGoalStreak } from '../../lib/streak';
-import type { LongTermGoal, FrequencyGoal, TrainingRecord, CustomExercise, BodyWeight, ProteinIntake } from '../../types';
+import type { LongTermGoal, FrequencyGoal, TrainingRecord, CustomExercise, BodyWeight, FoodIntake } from '../../types';
 import type { HabitGoals } from '../../hooks/useGoals';
 import Icon from '../Icon';
 import { formatRecordDetail } from '../../lib/recordFormat';
@@ -24,7 +24,7 @@ interface Props {
   onNavigateToGoals: () => void;
   bodyWeights: BodyWeight[];
   habitGoals: HabitGoals;
-  proteinIntakes: ProteinIntake[];
+  foodIntakes: FoodIntake[];
 }
 
 // ホームでは主要な目標のみ抜粋し、残りは目標管理タブに誘導する
@@ -40,7 +40,7 @@ export default function HomeTab({
   onNavigateToGoals,
   bodyWeights,
   habitGoals,
-  proteinIntakes,
+  foodIntakes,
 }: Props) {
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
@@ -55,8 +55,8 @@ export default function HomeTab({
 
   // 目標の進捗カード（横棒）の項目。習慣の3つは目標が未設定でも常に表示する
   const habitItems = useMemo(
-    () => buildHabitItems({ weeklyGoal, habitGoals, records, proteinIntakes, bodyWeights }),
-    [weeklyGoal, habitGoals, records, proteinIntakes, bodyWeights]
+    () => buildHabitItems({ weeklyGoal, habitGoals, records, foodIntakes, bodyWeights }),
+    [weeklyGoal, habitGoals, records, foodIntakes, bodyWeights]
   );
   // 長期目標は、達成率が低い（伸びしろが大きい）順に主要な目標だけを抜粋する
   const longTermItems = useMemo(() => buildLongTermItems(longTermGoals, records, MAX_ITEMS), [longTermGoals, records]);

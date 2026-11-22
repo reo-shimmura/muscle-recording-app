@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseProteinIntakeInput, parseRecordInput, parseRecordPatch, ValidationError } from './validation';
+import { parseFoodIntakeInput, parseRecordInput, parseRecordPatch, ValidationError } from './validation';
 
 const base = { date: '2026-11-17', exercise: 'ランニング', weight: 0, reps: 0, sets: 0, duration_minutes: 30, memo: '' };
 
@@ -27,19 +27,28 @@ describe('parseRecordPatch（距離）', () => {
   });
 });
 
-describe('parseProteinIntakeInput', () => {
-  it('日付と量（g）を受け取る', () => {
-    expect(parseProteinIntakeInput({ date: '2026-11-17', amount_g: 21 })).toEqual({ date: '2026-11-17', amount_g: 21 });
+describe('parseFoodIntakeInput', () => {
+  it('日付・食品・量を受け取り、たんぱく質はサーバー側で食品の一覧から計算する', () => {
+    expect(parseFoodIntakeInput({ date: '2026-11-22', food_key: 'egg', quantity: 2, protein_g: 999 })).toEqual({
+      date: '2026-11-22',
+      food_key: 'egg',
+      quantity: 2,
+      protein_g: 12.2,
+    });
   });
 
-  it('量が0以下・1杯（30g）超え・数値でない場合はエラー', () => {
-    expect(() => parseProteinIntakeInput({ date: '2026-11-17', amount_g: 0 })).toThrow(ValidationError);
-    expect(() => parseProteinIntakeInput({ date: '2026-11-17', amount_g: 31 })).toThrow(ValidationError);
-    expect(() => parseProteinIntakeInput({ date: '2026-11-17', amount_g: 'たくさん' })).toThrow(ValidationError);
+  it('一覧にない食品はエラー', () => {
+    expect(() => parseFoodIntakeInput({ date: '2026-11-22', food_key: 'pizza', quantity: 1 })).toThrow(ValidationError);
+  });
+
+  it('量が0以下・食品ごとの上限超え（プロテインは1杯30gまで）・数値でない場合はエラー', () => {
+    expect(() => parseFoodIntakeInput({ date: '2026-11-22', food_key: 'egg', quantity: 0 })).toThrow(ValidationError);
+    expect(() => parseFoodIntakeInput({ date: '2026-11-22', food_key: 'protein_powder', quantity: 31 })).toThrow(ValidationError);
+    expect(() => parseFoodIntakeInput({ date: '2026-11-22', food_key: 'egg', quantity: 'たくさん' })).toThrow(ValidationError);
   });
 
   it('日付がない・不正な場合はエラー', () => {
-    expect(() => parseProteinIntakeInput({ amount_g: 21 })).toThrow(ValidationError);
-    expect(() => parseProteinIntakeInput({ date: '11/17', amount_g: 21 })).toThrow(ValidationError);
+    expect(() => parseFoodIntakeInput({ food_key: 'egg', quantity: 1 })).toThrow(ValidationError);
+    expect(() => parseFoodIntakeInput({ date: '11/22', food_key: 'egg', quantity: 1 })).toThrow(ValidationError);
   });
 });

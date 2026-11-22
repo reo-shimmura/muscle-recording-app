@@ -1,4 +1,6 @@
 import { createClient, type Client } from '@libsql/client';
+import { PROTEIN_POWDER_KEY } from '@/app/constants/foods';
+import { PROTEIN_POWDER_PROTEIN_RATIO } from '@/app/constants/protein';
 
 let db: Client | null = null;
 
@@ -68,12 +70,27 @@ async function initSchema(db: Client): Promise<void> {
         amount_g REAL NOT NULL,
         created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
       )`,
+      // たんぱく質の摂取記録（プロテイン・卵・肉など）。protein_g は保存時に食品の一覧から計算した値
+      `CREATE TABLE IF NOT EXISTS food_intakes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        date TEXT NOT NULL,
+        food_key TEXT NOT NULL,
+        quantity REAL NOT NULL,
+        protein_g REAL NOT NULL,
+        created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+      )`,
+      // 1回だけ行うデータ移行の実行済みの印
+      `CREATE TABLE IF NOT EXISTS schema_migrations (
+        name TEXT PRIMARY KEY,
+        applied_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+      )`,
     ],
     'write'
   );
   await migrateAddDurationMinutes(db);
   await migrateAddDistanceKm(db);
   await migrateDropProgressImages(db);
+  await migrateProteinIntakesToFoodIntakes(db);
 }
 
 // 既存のrecordsテーブルに duration_minutes 列がなければ追加する（有酸素種目を分単位で記録するため）
@@ -97,4 +114,28 @@ async function migrateAddDistanceKm(db: Client): Promise<void> {
 // 画像登録機能の廃止に伴い、既存DBに残っている progress_images テーブルを削除する
 async function migrateDropProgressImages(db: Client): Promise<void> {
   await db.execute('DROP TABLE IF EXISTS progress_images');
+}
+
+const PROTEIN_TO_FOOD_MIGRATION = 'copy_protein_intakes_to_food_intakes';
+
+/**
+ * 記録済みのプロテイン（protein_intakes）を、たんぱく質の摂取記録（food_intakes）へ1回だけ写す。
+ * 粉の量に PROTEIN_POWDER_PROTEIN_RATIO を掛けてたんぱく質に換算する。
+ * 移行済みの印を残し、2回目以降は何もしない（写した記録を削除しても復活しないように）。
+ * 元の protein_intakes は消さずに残す。
+ */
+async function migrateProteinIntakesToFoodIntakes(db: Client): Promise<void> {
+  const done = await db.execute({ sql: 'SELECT 1 FROM schema_migrations WHERE name = ?', args: [PROTEIN_TO_FOOD_MIGRATION] });
+  if (done.rows.length > 0) return;
+  await db.batch(
+    [
+      {
+        sql: `INSERT INTO food_intakes (date, food_key, quantity, protein_g, created_at)
+              SELECT date, ?, amount_g, ROUND(amount_g * ?, 1), created_at FROM protein_intakes ORDER BY id`,
+        args: [PROTEIN_POWDER_KEY, PROTEIN_POWDER_PROTEIN_RATIO],
+      },
+      { sql: 'INSERT INTO schema_migrations (name) VALUES (?)', args: [PROTEIN_TO_FOOD_MIGRATION] },
+    ],
+    'write'
+  );
 }

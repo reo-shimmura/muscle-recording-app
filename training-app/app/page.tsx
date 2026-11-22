@@ -16,7 +16,7 @@ import RecordsTab from './components/details/RecordsTab';
 import { useTrainingData } from './hooks/useTrainingData';
 import { useGoals } from './hooks/useGoals';
 import { useBodyWeights } from './hooks/useBodyWeights';
-import { useProteinIntakes } from './hooks/useProteinIntakes';
+import { useFoodIntakes } from './hooks/useFoodIntakes';
 import { DEFAULT_EXERCISES, DEFAULT_EXERCISE_SET } from './constants/exercises';
 import type { CustomExercise, TrainingRecord, AlertMessage as AlertMessageType } from './types';
 import type { IconName } from './components/Icon';
@@ -58,8 +58,8 @@ export default function Home() {
   } = useGoals(showMessage);
   const { bodyWeights, loading: bodyWeightLoading, fetchBodyWeights, saveBodyWeight, deleteBodyWeight } =
     useBodyWeights(showMessage);
-  const { proteinIntakes, loading: proteinLoading, fetchProteinIntakes, saveProteinIntake, deleteProteinIntake } =
-    useProteinIntakes(showMessage);
+  const { foodIntakes, loading: foodLoading, fetchFoodIntakes, saveFoodIntake, deleteFoodIntake } =
+    useFoodIntakes(showMessage);
 
   const fetchExercises = useCallback(async () => {
     try {
@@ -77,7 +77,7 @@ export default function Home() {
     fetchExercises();
     fetchGoals();
     fetchBodyWeights();
-    fetchProteinIntakes();
+    fetchFoodIntakes();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -193,7 +193,7 @@ export default function Home() {
               onNavigateToGoals={() => setTab('goals')}
               bodyWeights={bodyWeights}
               habitGoals={habitGoals}
-              proteinIntakes={proteinIntakes}
+              foodIntakes={foodIntakes}
             />
           )}
 
@@ -207,10 +207,10 @@ export default function Home() {
               onSaveExercise={handleSaveExercise}
               showMessage={showMessage}
               records={records}
-              proteinIntakes={proteinIntakes}
-              proteinLoading={proteinLoading}
-              onSaveProtein={saveProteinIntake}
-              onDeleteProtein={deleteProteinIntake}
+              foodIntakes={foodIntakes}
+              foodLoading={foodLoading}
+              onSaveFood={saveFoodIntake}
+              onDeleteFood={deleteFoodIntake}
               bodyWeights={bodyWeights}
               bodyWeightLoading={bodyWeightLoading}
               onSaveBodyWeight={saveBodyWeight}
@@ -231,14 +231,14 @@ export default function Home() {
               onSaveWeeklyGoal={saveWeeklyGoal}
               onSaveMonthlyGoals={saveMonthlyGoals}
               habitGoals={habitGoals}
-              proteinIntakes={proteinIntakes}
+              foodIntakes={foodIntakes}
               bodyWeights={bodyWeights}
               onSaveHabitGoals={saveHabitGoals}
             />
           )}
 
           {tab === 'calendar' && (
-            <CalendarTab records={records} proteinIntakes={proteinIntakes} bodyWeights={bodyWeights} />
+            <CalendarTab records={records} foodIntakes={foodIntakes} bodyWeights={bodyWeights} />
           )}
 
           {tab === 'stats' && (

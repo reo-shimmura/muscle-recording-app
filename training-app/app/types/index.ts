@@ -53,12 +53,16 @@ export interface BodyWeight {
   weight_kg: number;
 }
 
-/** プロテインの摂取記録（1回分） */
-export interface ProteinIntake {
+/** たんぱく質の摂取記録（プロテイン・卵・肉などの1回分） */
+export interface FoodIntake {
   id: number;
   date: string;
-  /** 飲んだ量（g）。1杯30gのうち、つまみで選んだ割合 */
-  amount_g: number;
+  /** 食品の種類（app/constants/foods.ts の key） */
+  food_key: string;
+  /** 量（食品の単位。プロテインは粉のg、卵は個、肉はg） */
+  quantity: number;
+  /** 保存時に計算したたんぱく質（g） */
+  protein_g: number;
 }
 
 export interface CustomExercise {

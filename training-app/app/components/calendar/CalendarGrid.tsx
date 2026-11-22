@@ -165,7 +165,7 @@ export default function CalendarGrid({
         <LegendItem color={RECORD_COLOR_TIERS.high.base} label="5種目以上" />
         {markers && (
           <>
-            <MarkerLegendItem color={COLORS.protein} label="プロテイン" />
+            <MarkerLegendItem color={COLORS.protein} label="たんぱく質" />
             <MarkerLegendItem color={COLORS.bodyWeight} label="体重" />
           </>
         )}
