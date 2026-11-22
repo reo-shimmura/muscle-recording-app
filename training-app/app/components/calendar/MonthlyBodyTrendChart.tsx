@@ -13,7 +13,7 @@ interface Props {
 }
 
 const CHART_CONFIG: ChartConfig = {
-  protein: { label: 'プロテイン (g)', color: COLORS.protein },
+  protein: { label: 'たんぱく質 (g)', color: COLORS.protein },
   target: { label: '目安 (g)', color: '#9ca3af' },
   bodyWeight: { label: '体重 (kg)', color: COLORS.bodyWeight },
 };

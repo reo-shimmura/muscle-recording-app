@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { PROTEIN_SCOOP_G } from '@/app/constants/protein';
+import { calcProteinGrams, FOOD_BY_KEY } from '@/app/constants/foods';
 
 export class ValidationError extends Error {}
 
@@ -116,18 +116,26 @@ export function parseRecordInput(raw: unknown): RecordFields {
   };
 }
 
-export interface ProteinIntakeFields {
+export interface FoodIntakeFields {
   date: string;
-  amount_g: number;
+  food_key: string;
+  quantity: number;
+  /** サーバー側で食品の一覧から計算したたんぱく質（g）。クライアントの値は使わない */
+  protein_g: number;
 }
 
-/** プロテインの摂取記録の入力を検証する（量は0より大きく、1杯分以下） */
-export function parseProteinIntakeInput(raw: unknown): ProteinIntakeFields {
+/** たんぱく質の摂取記録の入力を検証する（食品は一覧にあるもの、量は0より大きく食品ごとの上限以下） */
+export function parseFoodIntakeInput(raw: unknown): FoodIntakeFields {
   const body = asObject(raw);
   const date = requireDate(body.date, 'date');
-  const amount = requireNumber(body.amount_g, 'amount_g', { min: 0, max: PROTEIN_SCOOP_G });
-  if (amount <= 0) throw new ValidationError('amount_g は0より大きい値で指定してください。');
-  return { date, amount_g: amount };
+  const foodKey = typeof body.food_key === 'string' ? body.food_key : '';
+  const food = FOOD_BY_KEY[foodKey];
+  if (!food) throw new ValidationError('food_key は登録されている食品を指定してください。');
+  const quantity = requireNumber(body.quantity, 'quantity', { min: 0, max: food.maxQuantity });
+  if (quantity <= 0) throw new ValidationError('quantity は0より大きい値で指定してください。');
+  const protein = calcProteinGrams(foodKey, quantity);
+  if (protein === null) throw new ValidationError('たんぱく質の量を計算できませんでした。');
+  return { date, food_key: foodKey, quantity, protein_g: protein };
 }
 
 export function validationErrorResponse(error: unknown): NextResponse | null {

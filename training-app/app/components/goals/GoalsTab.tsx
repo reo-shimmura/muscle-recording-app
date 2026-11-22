@@ -17,7 +17,7 @@ import type {
   FrequencyGoal,
   GoalMetric,
   LongTermGoal,
-  ProteinIntake,
+  FoodIntake,
   TrainingRecord,
 } from '../../types';
 import Icon, { type IconName } from '../Icon';
@@ -28,7 +28,7 @@ interface Props {
   monthlyGoals: FrequencyGoal[];
   habitGoals: HabitGoals;
   records: TrainingRecord[];
-  proteinIntakes: ProteinIntake[];
+  foodIntakes: FoodIntake[];
   bodyWeights: BodyWeight[];
   customExercisesWithCategory: CustomExercise[];
   allExercisesFlat: string[];
@@ -55,7 +55,7 @@ export default function GoalsTab({
   monthlyGoals,
   habitGoals,
   records,
-  proteinIntakes,
+  foodIntakes,
   bodyWeights,
   customExercisesWithCategory,
   allExercisesFlat,
@@ -73,8 +73,8 @@ export default function GoalsTab({
   );
   // 週間目標タブの上部に出す、今週の習慣（筋トレ・プロテイン・体重計）の達成状況
   const habitItems = useMemo(
-    () => buildHabitItems({ weeklyGoal, habitGoals, records, proteinIntakes, bodyWeights }),
-    [weeklyGoal, habitGoals, records, proteinIntakes, bodyWeights]
+    () => buildHabitItems({ weeklyGoal, habitGoals, records, foodIntakes, bodyWeights }),
+    [weeklyGoal, habitGoals, records, foodIntakes, bodyWeights]
   );
 
   return (

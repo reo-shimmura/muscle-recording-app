@@ -1,7 +1,8 @@
 /**
  * 目標を「横棒1行」で表示するための項目に変換する。ホーム画面と目標管理画面で共通に使う。
  */
-import type { BodyWeight, FrequencyGoal, LongTermGoal, ProteinIntake, TrainingRecord } from '../types';
+import type { BodyWeight, FoodIntake, FrequencyGoal, LongTermGoal, TrainingRecord } from '../types';
+import { powderIntakes } from './protein';
 import { calcLongTermGoalProgress, calcMonthlyGoalProgress, calcWeeklyDaysProgress } from './goalsProgress';
 import { HABIT_GOAL_KINDS, METRIC_LABELS, type HabitGoalKind } from '../constants/goals';
 
@@ -25,7 +26,8 @@ export interface HabitSources {
   /** 習慣目標（プロテイン摂取・体重計の記録） */
   habitGoals: Record<HabitGoalKind, FrequencyGoal | null>;
   records: TrainingRecord[];
-  proteinIntakes: ProteinIntake[];
+  /** たんぱく質の摂取記録（習慣「プロテイン摂取」はこのうちプロテインを飲んだ日だけを数える） */
+  foodIntakes: FoodIntake[];
   bodyWeights: BodyWeight[];
 }
 
@@ -60,10 +62,10 @@ function weeklyItem(
  * 目標が未設定でも、今週の回数（日数）は分かるようにする。
  */
 export function buildHabitItems(sources: HabitSources, now: Date = new Date()): GoalProgressItem[] {
-  const { weeklyGoal, habitGoals, records, proteinIntakes, bodyWeights } = sources;
+  const { weeklyGoal, habitGoals, records, foodIntakes, bodyWeights } = sources;
   return [
     weeklyItem('training', '筋トレ', '回', weeklyGoal, records.map((r) => r.date), now),
-    weeklyItem('protein', HABIT_GOAL_KINDS.protein.label, '日', habitGoals.protein, proteinIntakes.map((p) => p.date), now),
+    weeklyItem('protein', HABIT_GOAL_KINDS.protein.label, '日', habitGoals.protein, powderIntakes(foodIntakes).map((p) => p.date), now),
     weeklyItem('bodyWeight', HABIT_GOAL_KINDS.bodyWeight.label, '日', habitGoals.bodyWeight, bodyWeights.map((b) => b.date), now),
   ];
 }
