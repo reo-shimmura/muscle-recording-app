@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { NumberInput } from '@/components/ui/number-input';
 import { DEFAULT_EXERCISES } from '../../constants/exercises';
 import { buildMonthlyItems } from '../../lib/goalItems';
 import GoalProgressList from '../home/GoalProgressList';
@@ -58,13 +59,10 @@ export default function MonthlyGoalSection({ monthlyGoals, records, categoryMap,
           {CATEGORIES.map((category) => (
             <div key={category}>
               <label>{category}（回/月）</label>
-              <input
-                type="number"
+              <NumberInput
                 min="0"
                 value={targetCounts[category]}
-                onChange={(e) =>
-                  setTargetCounts((prev) => ({ ...prev, [category]: Number(e.target.value) }))
-                }
+                onChange={(value) => setTargetCounts((prev) => ({ ...prev, [category]: value }))}
               />
             </div>
           ))}

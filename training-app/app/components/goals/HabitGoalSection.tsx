@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from 'react';
 import { Button } from '@/components/ui/button';
+import { NumberInput } from '@/components/ui/number-input';
 import Icon, { type IconName } from '../Icon';
 import { HABIT_GOAL_KINDS, type HabitGoalKind } from '../../constants/goals';
 import type { HabitGoals } from '../../hooks/useGoals';
@@ -45,13 +46,12 @@ export default function HabitGoalSection({ habitGoals, onSave }: Props) {
               <label htmlFor={`habit-${kind}`}>
                 <Icon name={HABIT_ICONS[kind]} />{HABIT_GOAL_KINDS[kind].label}（週に何日）
               </label>
-              <input
+              <NumberInput
                 id={`habit-${kind}`}
-                type="number"
                 min="0"
                 max="7"
                 value={counts[kind]}
-                onChange={(e) => setCounts((prev) => ({ ...prev, [kind]: Number(e.target.value) }))}
+                onChange={(value) => setCounts((prev) => ({ ...prev, [kind]: value }))}
                 required
               />
             </div>

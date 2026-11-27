@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { NumberInput } from '@/components/ui/number-input';
 import type { FrequencyGoal } from '../../types';
 import Icon from '../Icon';
 
@@ -26,14 +27,7 @@ export default function WeeklyGoalSection({ weeklyGoal, onSave }: Props) {
         <div className="grid-cols-2">
           <div>
             <label>週に何回行くか</label>
-            <input
-              type="number"
-              min="1"
-              max="7"
-              value={targetCount}
-              onChange={(e) => setTargetCount(Number(e.target.value))}
-              required
-            />
+            <NumberInput min="1" max="7" value={targetCount} onChange={setTargetCount} required />
           </div>
         </div>
         <Button type="submit" className="mt-4"><Icon name="target" color="currentColor" />週間目標を設定する</Button>
