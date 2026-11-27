@@ -4,19 +4,24 @@ export interface MetricOption {
   value: GoalMetric;
   label: string;
   unit: string;
+  /**
+   * 目標値の入力の刻み。最小値も同じ値にする
+   * （ブラウザの数値入力は「最小値＋刻みの倍数」だけを有効とするため、両方を揃えて .0 / .5 などにする）
+   */
+  step: number;
 }
 
 /** 長期目標の指標（筋トレの種目） */
 export const STRENGTH_METRIC_OPTIONS: MetricOption[] = [
-  { value: 'max_weight', label: '最大重量', unit: 'kg' },
-  { value: 'total_sets', label: '累計セット数', unit: 'セット' },
-  { value: 'total_reps', label: '累計回数', unit: '回' },
+  { value: 'max_weight', label: '最大重量', unit: 'kg', step: 0.5 },
+  { value: 'total_sets', label: '累計セット数', unit: 'セット', step: 1 },
+  { value: 'total_reps', label: '累計回数', unit: '回', step: 1 },
 ];
 
 /** 長期目標の指標（ランニングなど有酸素の種目） */
 export const CARDIO_METRIC_OPTIONS: MetricOption[] = [
-  { value: 'total_distance', label: '累計距離', unit: 'km' },
-  { value: 'total_duration', label: '累計時間', unit: '分' },
+  { value: 'total_distance', label: '累計距離', unit: 'km', step: 0.5 },
+  { value: 'total_duration', label: '累計時間', unit: '分', step: 1 },
 ];
 
 /** 指標の表示名（一覧などで使う） */

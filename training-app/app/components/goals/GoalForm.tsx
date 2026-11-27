@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { NumberInput } from '@/components/ui/number-input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { GoalMetric } from '../../types';
 import Icon from '../Icon';
@@ -92,12 +93,12 @@ export default function GoalForm({ exercises, categoryMap, onAdd }: Props) {
         </div>
         <div>
           <label>目標値（{selectedMetric.unit}）</label>
-          <input
-            type="number"
-            min="0.1"
-            step={selectedMetric.value === 'total_distance' ? '0.1' : '1'}
+          {/* 最小値と刻みを揃える（重量・距離は .0 / .5、回数・時間は整数） */}
+          <NumberInput
+            min={selectedMetric.step}
+            step={selectedMetric.step}
             value={targetValue}
-            onChange={(e) => setTargetValue(Number(e.target.value))}
+            onChange={setTargetValue}
             required
           />
         </div>
